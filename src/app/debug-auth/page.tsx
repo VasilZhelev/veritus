@@ -13,7 +13,7 @@ export default function DebugAuthPage() {
             console.log("Test user signed in");
           } catch (error) {
             console.error("Error signing in test user:", error);
-          }
+           }
         };
       
         signInTestUser();
