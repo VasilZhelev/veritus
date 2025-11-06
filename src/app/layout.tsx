@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../styles/globals.css";
 import { Header } from "@/components/layout/header";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,54 +32,56 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var root = document.documentElement;
-                  var mql = window.matchMedia('(prefers-color-scheme: dark)');
-                  var KEY = 'theme:preference'; // new key to avoid legacy overrides
-                  var stored = localStorage.getItem(KEY); // 'light' | 'dark' | 'system' | null
-                  // One-time migration: if explicitly 'system' in old key, carry over; otherwise ignore
-                  if (!stored) {
-                    var legacy = localStorage.getItem('theme');
-                    if (legacy === 'system') {
-                      try { localStorage.setItem(KEY, 'system'); } catch {}
-                      stored = 'system';
-                    }
-                  }
-
-                  function apply(theme) {
-                    var useDark = theme === 'dark' || (theme !== 'light' && mql.matches);
-                    if (useDark) root.classList.add('dark');
-                    else root.classList.remove('dark');
-                  }
-
-                  apply(stored);
-
-                  // Keep in sync with OS when following system
+        <AuthProvider>
+          <Header />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
                   try {
-                    mql.addEventListener('change', function() {
-                      var current = localStorage.getItem(KEY);
-                      if (!current || current === 'system') apply(current);
-                    });
-                  } catch (_) {
-                    // Safari fallback
-                    mql.addListener(function() {
-                      var current = localStorage.getItem(KEY);
-                      if (!current || current === 'system') apply(current);
-                    });
+                    var root = document.documentElement;
+                    var mql = window.matchMedia('(prefers-color-scheme: dark)');
+                    var KEY = 'theme:preference'; // new key to avoid legacy overrides
+                    var stored = localStorage.getItem(KEY); // 'light' | 'dark' | 'system' | null
+                    // One-time migration: if explicitly 'system' in old key, carry over; otherwise ignore
+                    if (!stored) {
+                      var legacy = localStorage.getItem('theme');
+                      if (legacy === 'system') {
+                        try { localStorage.setItem(KEY, 'system'); } catch {}
+                        stored = 'system';
+                      }
+                    }
+
+                    function apply(theme) {
+                      var useDark = theme === 'dark' || (theme !== 'light' && mql.matches);
+                      if (useDark) root.classList.add('dark');
+                      else root.classList.remove('dark');
+                    }
+
+                    apply(stored);
+
+                    // Keep in sync with OS when following system
+                    try {
+                      mql.addEventListener('change', function() {
+                        var current = localStorage.getItem(KEY);
+                        if (!current || current === 'system') apply(current);
+                      });
+                    } catch (_) {
+                      // Safari fallback
+                      mql.addListener(function() {
+                        var current = localStorage.getItem(KEY);
+                        if (!current || current === 'system') apply(current);
+                      });
+                    }
+                  } catch (e) {
+                    // no-op
                   }
-                } catch (e) {
-                  // no-op
-                }
-              })();
-            `,
-          }}
-        />
-        {children}
+                })();
+              `,
+            }}
+          />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

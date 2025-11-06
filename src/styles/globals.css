@@ -87,6 +87,8 @@
     transform: translateY(0);
     }
   }
+  --color-destructive-foreground: var(--destructive-foreground);
+  --radius: var(----radius)
 }
 
 :root {
@@ -143,6 +145,7 @@
 
   --brand: 220 80% 60%;
   --brand-foreground: 190 70% 70%;
+  --destructive-foreground: oklch(0.985 0 0);
 }
 
 .dark {
@@ -188,6 +191,8 @@
   --sidebar-ring: oklch(0.6 0.07 250);
 
   --brand: 220 80% 60%;
+
+  --destructive-foreground: oklch(0.985 0 0);
 }
 
 @layer base {

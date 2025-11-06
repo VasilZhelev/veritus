@@ -1,13 +1,17 @@
 'use client';
 import React from 'react';
+import Link from 'next/link';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { MenuToggleIcon } from '@/components/icons/menu-toggle-icon';
 import { useScroll } from '@/hooks/use-scroll';
+import { useAuth } from '@/contexts/AuthContext';
+import { UserMenu } from '@/components/user-menu';
 
 export function Header() {
 	const [open, setOpen] = React.useState(false);
 	const scrolled = useScroll(10);
+	const { user, loading, signOut } = useAuth();
 
 	const links = [
 		{
@@ -58,15 +62,29 @@ export function Header() {
 					},
 				)}
 			>
-				<WordmarkIcon className="h-4" />
+				<Link href="/">
+					<WordmarkIcon className="h-4" />
+				</Link>
 				<div className="hidden items-center gap-2 md:flex">
 					{links.map((link, i) => (
-						<a key={i} className={buttonVariants({ variant: 'ghost' })} href={link.href}>
+						<Link key={i} className={buttonVariants({ variant: 'ghost' })} href={link.href}>
 							{link.label}
-						</a>
+						</Link>
 					))}
-					<Button variant="outline">Sign In</Button>
-					<Button>Get Started</Button>
+					{loading ? (
+						<div className="h-10 w-20 animate-pulse rounded-md bg-muted" />
+					) : user ? (
+						<UserMenu />
+					) : (
+						<>
+							<Link href="/login">
+								<Button variant="outline">Sign In</Button>
+							</Link>
+							<Link href="/signup">
+								<Button>Get Started</Button>
+							</Link>
+						</>
+					)}
 				</div>
 				<Button size="icon" variant="outline" onClick={() => setOpen(!open)} className="md:hidden">
 					<MenuToggleIcon open={open} className="size-5" duration={300} />
@@ -101,10 +119,31 @@ export function Header() {
 						))}
 					</div>
 					<div className="flex flex-col gap-2">
-						<Button variant="outline" className="w-full">
-							Sign In
-						</Button>
-						<Button className="w-full">Get Started</Button>
+						{loading ? (
+							<div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+						) : user ? (
+							<>
+								<Link href="/settings" className="w-full">
+									<Button variant="ghost" className="w-full justify-start">
+										Settings
+									</Button>
+								</Link>
+								<Button variant="outline" className="w-full" onClick={() => signOut()}>
+									Sign Out
+								</Button>
+							</>
+						) : (
+							<>
+								<Link href="/login" className="w-full">
+									<Button variant="outline" className="w-full">
+										Sign In
+									</Button>
+								</Link>
+								<Link href="/signup" className="w-full">
+									<Button className="w-full">Get Started</Button>
+								</Link>
+							</>
+						)}
 					</div>
 				</div>
 			</div>
