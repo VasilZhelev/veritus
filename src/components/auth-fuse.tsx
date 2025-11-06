@@ -282,7 +282,7 @@ function SignInForm() {
         />
         <div className="flex items-center justify-end">
           <Link
-            href="/reset-password"
+            href={`/reset-password${email ? `?email=${encodeURIComponent(email)}` : ""}`}
             className="text-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
           >
             Forgot password?
@@ -320,14 +320,25 @@ function SignUpForm() {
     }
   };
 
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+
   const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+    setShowVerificationMessage(false);
     setLoading(true);
 
     try {
       await signUp(email, password, name || undefined);
-      router.push("/");
+      setShowVerificationMessage(true);
+      // Clear form
+      setName("");
+      setEmail("");
+      setPassword("");
+      // Show message for 5 seconds before redirecting
+      setTimeout(() => {
+        router.push("/");
+      }, 5000);
     } catch (err) {
       if (err instanceof FirebaseError) {
         setError(getErrorMessage(err));
@@ -348,6 +359,26 @@ function SignUpForm() {
       {error && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
           {error}
+        </div>
+      )}
+      {showVerificationMessage && (
+        <div className="rounded-lg border border-green-500/50 bg-green-500/10 p-4 text-sm">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 mt-0.5">
+              <svg className="h-5 w-5 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-green-900 dark:text-green-100">Account created successfully!</p>
+              <p className="mt-1 text-green-700 dark:text-green-300">
+                We've sent a verification email to <strong>{email}</strong>. Please check your inbox and click the verification link to activate your account.
+              </p>
+              <p className="mt-2 text-xs text-green-600 dark:text-green-400">
+                Redirecting to home page in a few seconds...
+              </p>
+            </div>
+          </div>
         </div>
       )}
       <div className="grid gap-4">

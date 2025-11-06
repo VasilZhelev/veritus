@@ -15,15 +15,15 @@ export function Header() {
 
 	const links = [
 		{
-			label: 'Features',
+			label: 'Your Listings',
 			href: '#',
 		},
 		{
-			label: 'Pricing',
+			label: 'Compare',
 			href: '#',
 		},
 		{
-			label: 'About',
+			label: 'About us',
 			href: '#',
 		},
 	];

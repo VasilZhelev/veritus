@@ -7,8 +7,8 @@ export default function Home() {
         text: "Introducing",
         action: { text: "Read more", href: "/" },
       }}
-      title="Build faster with Veritus"
-      description="Modern components and utilities powered by shadcn/ui and Next.js."
+      title="Choosing a car made easy"
+      description="We'll help you find the perfect car for your needs."
       actions={[
         { text: "Get Started", href: "/", variant: "default" },
         { text: "View Docs", href: "/", variant: "outline" },

@@ -31,9 +31,9 @@ export function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           className={cn(
-            "flex items-center gap-2 px-3 py-2 h-auto",
+            "flex items-center gap-2 px-3 py-2 h-auto border-0",
             "hover:bg-accent"
           )}
         >

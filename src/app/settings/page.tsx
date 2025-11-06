@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -212,6 +212,13 @@ export default function SettingsPage() {
     }
   };
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login");
+    }
+  }, [loading, user, router]);
+
   if (loading) {
     return (
       <div className="container mx-auto p-8 max-w-4xl">
@@ -226,7 +233,6 @@ export default function SettingsPage() {
   }
 
   if (!user) {
-    router.push("/login");
     return null;
   }
 

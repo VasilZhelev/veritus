@@ -35,6 +35,7 @@ interface AuthContextType {
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   deleteAccount: (password: string) => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
+  reloadUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,10 +44,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Listen to auth state changes
+  // Listen to auth state changes and reload user to get latest verification status
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Reload user to get latest email verification status
+        await user.reload();
+        setUser(auth.currentUser);
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
 
@@ -80,8 +87,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signUp = useCallback(async (email: string, password: string, displayName?: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    if (displayName && userCredential.user) {
-      await updateProfile(userCredential.user, { displayName });
+    if (userCredential.user) {
+      // Update profile if display name provided
+      if (displayName) {
+        await updateProfile(userCredential.user, { displayName });
+      }
+      // Send verification email after signup
+      await sendEmailVerification(userCredential.user);
     }
     return userCredential;
   }, []);
@@ -148,6 +160,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await sendEmailVerification(user);
   }, [user]);
 
+  // Reload user to refresh verification status
+  const reloadUser = useCallback(async () => {
+    if (!user) return;
+    await user.reload();
+    setUser(auth.currentUser);
+  }, [user]);
+
   const value: AuthContextType = {
     user,
     loading,
@@ -162,6 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     changePassword,
     deleteAccount,
     sendVerificationEmail,
+    reloadUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
