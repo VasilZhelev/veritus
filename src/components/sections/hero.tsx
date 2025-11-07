@@ -6,8 +6,10 @@ import { ArrowRightIcon } from "lucide-react";
 import { Mockup, MockupFrame } from "@/components/ui/mockup";
 import { Glow } from "@/components/ui/glow";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { cn } from "@/lib/utils";
+import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
 
 interface HeroAction {
   text: string;
@@ -33,6 +35,10 @@ interface HeroProps {
   title: string;
   description: string;
   actions: HeroAction[];
+  input?: {
+    placeholders: string[];
+    helperText?: string;
+  };
   image: {
     light: string;
     dark: string;
@@ -45,9 +51,11 @@ export function HeroSection({
   title,
   description,
   actions,
+  input,
   image,
 }: HeroProps) {
   const [isDark, setIsDark] = useState(false);
+  const inputValueRef = useRef("");
   useEffect(() => {
     const updateTheme = () => {
       if (typeof document !== "undefined") {
@@ -63,6 +71,17 @@ export function HeroSection({
     return () => observer.disconnect();
   }, []);
   const imageSrc = !isDark ? image.light : image.dark;
+
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    inputValueRef.current = event.target.value;
+  };
+
+  const handleInputSubmit = (_event: FormEvent<HTMLFormElement>) => {
+    const link = inputValueRef.current.trim();
+    if (!link) {
+      return;
+    }
+  };
 
   return (
     <section
@@ -96,18 +115,27 @@ export function HeroSection({
           </p>
 
           {/* Actions */}
-          <div className="relative z-10 flex animate-appear justify-center gap-4 opacity-0 delay-300">
-            <div className="relative z-10 flex animate-appear justify-center gap-4 opacity-0 delay-300">
-              {actions.map((action, index) => (
-                <Button key={index} variant={action.variant} size="lg" asChild>
-                  <a href={action.href} className="flex items-center gap-2">
-                    {action.icon}
-                    {action.text}
-                  </a>
-                </Button>
-              ))}
-            </div>
+          <div className="relative z-10 flex animate-appear justify-center gap-4 opacity-0 delay-200">
+            {actions.map((action, index) => (
+              <Button key={index} variant={action.variant} size="lg" asChild>
+                <a href={action.href} className="flex items-center gap-2">
+                  {action.icon}
+                  {action.text}
+                </a>
+              </Button>
+            ))}
           </div>
+
+          {/* Input */}
+          {input && (
+            <div className="relative z-10 flex w-full max-w-2xl flex-col items-center gap-3 animate-appear opacity-0 delay-300">
+              <PlaceholdersAndVanishInput
+                placeholders={input.placeholders}
+                onChange={handleInputChange}
+                onSubmit={handleInputSubmit}
+              />
+            </div>
+          )}
 
           {/* Image with Glow */}
           <div className="relative pt-12">
@@ -135,5 +163,3 @@ export function HeroSection({
     </section>
   );
 }
-
-
