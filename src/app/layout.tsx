@@ -4,6 +4,7 @@ import "../styles/globals.css";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ListingsProvider } from "@/contexts/ListingsContext";
 import { EmailVerificationBanner } from "@/components/email-verification-banner";
 
 const geistSans = Geist({
@@ -35,8 +36,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <EmailVerificationBanner />
-          <Header />
+          <ListingsProvider>
+            <EmailVerificationBanner />
+            <Header />
           <script
             dangerouslySetInnerHTML={{
               __html: `
@@ -89,6 +91,7 @@ export default function RootLayout({
             </main>
             <Footer />
           </div>
+          </ListingsProvider>
         </AuthProvider>
       </body>
     </html>

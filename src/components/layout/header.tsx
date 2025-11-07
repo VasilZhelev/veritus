@@ -16,7 +16,7 @@ export function Header() {
 	const links = [
 		{
 			label: 'Your Listings',
-			href: '#',
+			href: '/listings',
 		},
 		{
 			label: 'Compare',
@@ -106,16 +106,17 @@ export function Header() {
 				>
 					<div className="grid gap-y-2">
 						{links.map((link) => (
-							<a
+							<Link
 								key={link.label}
+								href={link.href}
 								className={buttonVariants({
 									variant: 'ghost',
 									className: 'justify-start',
 								})}
-								href={link.href}
+								onClick={() => setOpen(false)}
 							>
 								{link.label}
-							</a>
+							</Link>
 						))}
 					</div>
 					<div className="flex flex-col gap-2">
