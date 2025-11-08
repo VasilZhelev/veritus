@@ -1,25 +1,29 @@
+"use client";
+
 import { HeroSection } from "@/components/sections/hero";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Home() {
+  const { t } = useLanguage();
+
   return (
     <HeroSection
       badge={{
-        text: "Introducing",
-        action: { text: "Read more", href: "/" },
+        text: t("home.badge"),
+        action: { text: t("home.badgeAction"), href: "/" },
       }}
-      title="Choosing a car made easy"
-      description="We'll help you find the perfect car for your needs."
+      title={t("home.title")}
+      description={t("home.description")}
       actions={[
-        { text: "Get Started", href: "/", variant: "default" },
-        { text: "View Docs", href: "/", variant: "outline" },
+        { text: t("home.getStarted"), href: "/", variant: "default" },
+        { text: t("home.viewDocs"), href: "/", variant: "outline" },
       ]}
       input={{
         placeholders: [
-          "Paste a car URL",
+          t("home.inputPlaceholder"),
           "https://www.mobile.bg/obiava-21762431510491781-bmw-x5-m-pack-xdrive-360-kam-distronic-digital-pamet-lyuk",
         ],
-        helperText:
-          "Paste a link to any listing and we’ll surface the specs that matter.",
+        helperText: t("home.inputHelperText"),
       }}
       image={{
         light: "https://www.launchuicomponents.com/app-dark.png",

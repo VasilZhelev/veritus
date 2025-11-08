@@ -5,7 +5,9 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ListingsProvider } from "@/contexts/ListingsContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { EmailVerificationBanner } from "@/components/email-verification-banner";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,8 +39,13 @@ export default function RootLayout({
       >
         <AuthProvider>
           <ListingsProvider>
-            <EmailVerificationBanner />
-            <Header />
+            <LanguageProvider>
+              <EmailVerificationBanner />
+              <Header />
+              {/* Language Switcher - Fixed in top right corner */}
+              <div className="fixed top-4 right-4 z-[100] md:top-6 md:right-6">
+                <LanguageSwitcher />
+              </div>
           <script
             dangerouslySetInnerHTML={{
               __html: `
@@ -91,6 +98,7 @@ export default function RootLayout({
             </main>
             <Footer />
           </div>
+            </LanguageProvider>
           </ListingsProvider>
         </AuthProvider>
       </body>

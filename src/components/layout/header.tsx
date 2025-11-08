@@ -6,25 +6,27 @@ import { cn } from '@/lib/utils';
 import { MenuToggleIcon } from '@/components/icons/menu-toggle-icon';
 import { useScroll } from '@/hooks/use-scroll';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { UserMenu } from '@/components/user-menu';
 
 export function Header() {
 	const [open, setOpen] = React.useState(false);
 	const scrolled = useScroll(10);
 	const { user, loading, signOut } = useAuth();
+	const { t } = useLanguage();
 
 	const links = [
 		{
-			label: 'Your Listings',
+			label: t('nav.yourListings'),
 			href: '/listings',
 		},
 		{
-			label: 'Compare',
+			label: t('nav.compare'),
 			href: '#',
 		},
 		{
-			label: 'About us',
-			href: '#',
+			label: t('nav.aboutUs'),
+			href: '/about',
 		},
 	];
 
@@ -78,10 +80,10 @@ export function Header() {
 					) : (
 						<>
 							<Link href="/login">
-								<Button variant="outline">Sign In</Button>
+								<Button variant="outline">{t('nav.signIn')}</Button>
 							</Link>
 							<Link href="/signup">
-								<Button>Get Started</Button>
+								<Button>{t('nav.getStarted')}</Button>
 							</Link>
 						</>
 					)}
@@ -126,22 +128,22 @@ export function Header() {
 							<>
 								<Link href="/settings" className="w-full">
 									<Button variant="ghost" className="w-full justify-start">
-										Settings
+										{t('nav.settings')}
 									</Button>
 								</Link>
 								<Button variant="outline" className="w-full" onClick={() => signOut()}>
-									Sign Out
+									{t('nav.signOut')}
 								</Button>
 							</>
 						) : (
 							<>
 								<Link href="/login" className="w-full">
 									<Button variant="outline" className="w-full">
-										Sign In
+										{t('nav.signIn')}
 									</Button>
 								</Link>
 								<Link href="/signup" className="w-full">
-									<Button className="w-full">Get Started</Button>
+									<Button className="w-full">{t('nav.getStarted')}</Button>
 								</Link>
 							</>
 						)}
