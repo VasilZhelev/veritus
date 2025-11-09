@@ -81,6 +81,15 @@ const translations: Record<Language, Record<string, string>> = {
     "about.ctaDescription": "Join thousands of smart car buyers who use Veritus to make informed decisions.",
     "about.startSearching": "Start Searching",
     "about.viewListings": "View Your Listings",
+    "about.story": "Our Story",
+    "about.storyDescription": "Veritus was born from a simple observation: buying a car shouldn't be complicated. We saw people spending countless hours researching, comparing, and analyzing car listings, often missing crucial details or making uninformed decisions. Our team of automotive enthusiasts and technology experts came together to solve this problem.",
+    "about.storyMore": "Today, Veritus helps thousands of car buyers make confident decisions by providing instant access to comprehensive car data, intelligent analysis, and powerful comparison tools. We're constantly evolving our platform to make car buying even smarter and more accessible.",
+    "about.technology": "Powered by Advanced Technology",
+    "about.technologyDescription": "We leverage cutting-edge AI and machine learning algorithms to extract, analyze, and verify car information from multiple sources. Our technology ensures accuracy, speed, and reliability in every analysis.",
+    "about.whyChoose": "Why Choose Veritus?",
+    "about.whyChooseDescription": "We're not just another car listing aggregator. We're your intelligent car buying companion, designed to save you time, money, and stress. Our platform combines the power of technology with deep automotive expertise to deliver insights you can trust.",
+    "about.trust": "Trusted by Car Buyers",
+    "about.trustDescription": "Join a growing community of smart car buyers who trust Veritus to help them find their perfect vehicle. Our commitment to accuracy, transparency, and user satisfaction drives everything we do.",
     
     // Common
     "common.loading": "Loading...",
@@ -150,6 +159,15 @@ const translations: Record<Language, Record<string, string>> = {
     "about.ctaDescription": "Присъединете се към хиляди умни купувачи на коли, които използват Veritus, за да вземат информирани решения.",
     "about.startSearching": "Започнете търсене",
     "about.viewListings": "Вижте вашите обяви",
+    "about.story": "Нашата история",
+    "about.storyDescription": "Veritus се роди от просто наблюдение: покупката на кола не трябва да е сложна. Видяхме хора, които прекарват безброй часове в изследване, сравняване и анализ на обяви за коли, често пропускайки важни детайли или вземайки неинформирани решения. Нашият екип от автомобилни ентусиасти и технологични експерти се събра, за да реши този проблем.",
+    "about.storyMore": "Днес Veritus помага на хиляди купувачи на коли да вземат уверени решения, като предоставя незабавен достъп до цялостни данни за коли, интелигентен анализ и мощни инструменти за сравнение. Постоянно развиваме нашата платформа, за да направим покупката на коли още по-умна и по-достъпна.",
+    "about.technology": "Задвижвано от напреднала технология",
+    "about.technologyDescription": "Използваме най-новите AI и машинно обучение алгоритми, за да извличаме, анализираме и проверяваме информация за коли от множество източници. Нашата технология гарантира точност, скорост и надеждност във всеки анализ.",
+    "about.whyChoose": "Защо да изберете Veritus?",
+    "about.whyChooseDescription": "Не сме просто още един агрегатор на обяви за коли. Ние сме вашият интелигентен спътник при покупка на кола, проектиран да ви спести време, пари и стрес. Нашата платформа комбинира силата на технологията с дълбоки автомобилни познания, за да достави прозрения, на които можете да се доверите.",
+    "about.trust": "Доверен от купувачи на коли",
+    "about.trustDescription": "Присъединете се към растяща общност от умни купувачи на коли, които се доверяват на Veritus да им помогне да намерят перфектното превозно средство. Нашето ангажиране към точност, прозрачност и удовлетвореност на потребителите ръководи всичко, което правим.",
     
     // Common
     "common.loading": "Зареждане...",

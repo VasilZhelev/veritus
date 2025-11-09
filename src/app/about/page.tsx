@@ -13,12 +13,78 @@ import {
   Zap, 
   CheckCircle2,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Brain,
+  Globe,
+  Heart
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useTransform } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useState } from "react";
+
+// Interactive Image Component
+const InteractiveImage = ({ 
+  src, 
+  alt, 
+  className 
+}: { 
+  src: string; 
+  alt: string; 
+  className?: string;
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  
+  const rotateX = useTransform(y, [-0.5, 0.5], [5, -5]);
+  const rotateY = useTransform(x, [-0.5, 0.5], [-5, 5]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    x.set((e.clientX - centerX) / rect.width);
+    y.set((e.clientY - centerY) / rect.height);
+  };
+
+  return (
+    <motion.div
+      className={cn("relative overflow-hidden rounded-2xl group", className)}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        x.set(0);
+        y.set(0);
+      }}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+      }}
+    >
+      <motion.div
+        animate={{
+          scale: isHovered ? 1.1 : 1,
+        }}
+        transition={{ duration: 0.3 }}
+        className="relative w-full h-full"
+      >
+        <Image
+          src={src}
+          alt={alt}
+          width={600}
+          height={400}
+          className="w-full h-full object-cover transition-all duration-500"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      </motion.div>
+    </motion.div>
+  );
+};
 
 export default function AboutPage() {
   const { t } = useLanguage();
@@ -61,6 +127,7 @@ export default function AboutPage() {
     t("about.feature5"),
     t("about.feature6"),
   ];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -100,14 +167,51 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Mission Section */}
+      {/* Story Section with Interactive Image */}
       <section className="py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Badge variant="outline" className="mb-4">
+                {t("about.story")}
+              </Badge>
+              <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl">
+                {t("about.story")}
+              </h2>
+              <p className="mb-6 text-lg text-muted-foreground leading-relaxed">
+                {t("about.storyDescription")}
+              </p>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                {t("about.storyMore")}
+              </p>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <InteractiveImage
+                src="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&q=80"
+                alt="Team collaboration"
+                className="h-[400px] shadow-2xl"
+              />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mission Section */}
+      <section className="bg-muted/50 py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center mb-16">
             <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
               {t("about.mission")}
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-lg text-muted-foreground leading-relaxed">
               {t("about.missionDescription")}
             </p>
           </div>
@@ -132,6 +236,45 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* Technology Section with Interactive Image */}
+      <section className="py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              className="order-2 lg:order-1"
+            >
+              <InteractiveImage
+                src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&q=80"
+                alt="Technology and innovation"
+                className="h-[400px] shadow-2xl"
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="order-1 lg:order-2"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <Brain className="h-8 w-8 text-primary" />
+                <Badge variant="outline">
+                  {t("about.technology")}
+                </Badge>
+              </div>
+              <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl">
+                {t("about.technology")}
+              </h2>
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                {t("about.technologyDescription")}
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Values Section */}
       <section className="bg-muted/50 py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -151,6 +294,7 @@ export default function AboutPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
               >
                 <Card className="h-full border-2 transition-all duration-300 hover:border-primary hover:shadow-lg">
                   <CardHeader>
@@ -169,19 +313,26 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Why Choose Section with Interactive Image */}
       <section className="py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-            <div>
-              <Badge variant="outline" className="mb-4">
-                {t("about.features")}
-              </Badge>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <Heart className="h-8 w-8 text-primary" />
+                <Badge variant="outline">
+                  {t("about.whyChoose")}
+                </Badge>
+              </div>
               <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl">
-                {t("about.featuresTitle")}
+                {t("about.whyChoose")}
               </h2>
-              <p className="mb-8 text-lg text-muted-foreground">
-                {t("about.featuresDescription")}
+              <p className="mb-6 text-lg text-muted-foreground leading-relaxed">
+                {t("about.whyChooseDescription")}
               </p>
               <ul className="space-y-4">
                 {features.map((feature, index) => (
@@ -197,75 +348,69 @@ export default function AboutPage() {
                   </motion.li>
                 ))}
               </ul>
-            </div>
-            <div className="relative">
-              <div className="relative rounded-2xl border bg-card p-8 shadow-2xl">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Car className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-semibold">BMW X5</div>
-                      <div className="text-sm text-muted-foreground">2020 • 217,000 km</div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                    <div>
-                      <div className="text-sm text-muted-foreground">Price</div>
-                      <div className="text-lg font-semibold">€40,898</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Fuel</div>
-                      <div className="text-lg font-semibold">Diesel</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Engine</div>
-                      <div className="text-lg font-semibold">3.0L</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-muted-foreground">Power</div>
-                      <div className="text-lg font-semibold">265 HP</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="absolute -z-10 -inset-4 rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5 blur-xl" />
-            </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <InteractiveImage
+                src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80"
+                alt="Car selection process"
+                className="h-[500px] shadow-2xl"
+              />
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 py-24 sm:py-32">
+      {/* Trust Section */}
+      <section className="bg-gradient-to-br from-primary/10 via-primary/5 to-primary/10 py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mx-auto max-w-3xl text-center"
-          >
-            <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              {t("about.ctaTitle")}
-            </h2>
-            <p className="mb-8 text-lg text-muted-foreground">
-              {t("about.ctaDescription")}
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg" className="gap-2">
-                <Link href="/">
-                  {t("about.startSearching")}
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" size="lg">
-                <Link href="/listings">{t("about.viewListings")}</Link>
-              </Button>
-            </div>
-          </motion.div>
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6 }}
+            >
+              <InteractiveImage
+                src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80"
+                alt="Trusted community"
+                className="h-[400px] shadow-2xl"
+              />
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <Globe className="h-8 w-8 text-primary" />
+                <Badge variant="outline">
+                  {t("about.trust")}
+                </Badge>
+              </div>
+              <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl">
+                {t("about.trust")}
+              </h2>
+              <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+                {t("about.trustDescription")}
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <Button asChild size="lg" className="gap-2">
+                  <Link href="/">
+                    {t("about.startSearching")}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" size="lg">
+                  <Link href="/listings">{t("about.viewListings")}</Link>
+                </Button>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
     </div>
   );
 }
-
