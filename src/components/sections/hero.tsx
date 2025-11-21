@@ -10,7 +10,6 @@ import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { cn } from "@/lib/utils";
 import { PlaceholdersAndVanishInput } from "@/components/ui/placeholders-and-vanish-input";
-import { useListings } from "@/contexts/ListingsContext";
 import { useRouter } from "next/navigation";
 
 interface HeroAction {
@@ -58,7 +57,6 @@ export function HeroSection({
 }: HeroProps) {
   const [isDark, setIsDark] = useState(false);
   const inputValueRef = useRef("");
-  const { addListing } = useListings();
   const router = useRouter();
 
   useEffect(() => {
@@ -81,69 +79,7 @@ export function HeroSection({
     inputValueRef.current = event.target.value;
   };
 
-  const extractCarInfoFromUrl = (url: string) => {
-    // Try to extract basic info from mobile.bg URLs
-    // Example: https://www.mobile.bg/obiava-21762431510491781-bmw-x5-m-pack-xdrive-360-kam-distronic-digital-pamet-lyuk
-    const mobileBgMatch = url.match(/mobile\.bg\/obiava-\d+-(.+)/);
-    if (mobileBgMatch) {
-      const titlePart = mobileBgMatch[1];
-      // Try to extract brand and model from the URL slug
-      const parts = titlePart.split("-");
-      let brand = "";
-      let model = "";
 
-      // Common car brands to look for
-      const brands = [
-        "bmw",
-        "mercedes",
-        "audi",
-        "volkswagen",
-        "ford",
-        "toyota",
-        "honda",
-        "nissan",
-        "hyundai",
-        "kia",
-        "peugeot",
-        "renault",
-        "opel",
-        "skoda",
-        "seat",
-        "fiat",
-        "citroen",
-        "mazda",
-        "suzuki",
-        "volvo",
-        "lexus",
-      ];
-
-      for (let i = 0; i < parts.length; i++) {
-        const part = parts[i].toLowerCase();
-        if (brands.includes(part)) {
-          brand = part.charAt(0).toUpperCase() + part.slice(1);
-          // Next part might be the model
-          if (i + 1 < parts.length) {
-            model =
-              parts[i + 1].charAt(0).toUpperCase() + parts[i + 1].slice(1);
-          }
-          break;
-        }
-      }
-
-      return {
-        brand: brand || "Unknown",
-        model: model || "Car",
-        url,
-      };
-    }
-
-    // Fallback for other URLs
-    return {
-      brand: "Unknown",
-      model: "Car",
-      url,
-    };
-  };
 
   const handleInputSubmit = (_event: FormEvent<HTMLFormElement>) => {
     const link = inputValueRef.current.trim();
@@ -151,21 +87,7 @@ export function HeroSection({
       return;
     }
 
-    // Extract basic info from URL
-    const carInfo = extractCarInfoFromUrl(link);
-
-    // Add listing
-    addListing({
-      ...carInfo,
-      image: undefined, // Can be enhanced later with image extraction
-      description: `Car listing from ${new URL(link).hostname}`,
-    });
-
-    // Clear input
-    inputValueRef.current = "";
-
-    // Optionally redirect to listings page
-    // router.push("/listings");
+    router.push(`/scrape?url=${encodeURIComponent(link)}`);
   };
 
   return (
