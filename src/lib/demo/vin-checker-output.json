@@ -1,0 +1,14 @@
+{
+  "vin": "WVWZZZ1KZEW123456",
+  "details": {
+    "make": "Volkswagen",
+    "model": "Golf",
+    "year": 2014,
+    "fuel": "Diesel",
+    "registrationCountry": "DE",
+    "price": null,
+    "currency": null,
+    "imported": true
+  }
+}
+

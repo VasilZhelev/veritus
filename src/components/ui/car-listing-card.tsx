@@ -9,6 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
   ExternalLink,
@@ -225,15 +226,13 @@ export function CarListingCard({
 
       <CardFooter className="pt-4">
         <Button variant="outline" className="w-full group/btn" asChild>
-          <a
-            href={listing.url}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/listing/demo"
             className="flex items-center justify-center gap-2"
           >
-            View Listing
+            View Details
             <ExternalLink className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
-          </a>
+          </Link>
         </Button>
       </CardFooter>
     </Card>
