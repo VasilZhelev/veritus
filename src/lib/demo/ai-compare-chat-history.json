@@ -1,51 +1,51 @@
 {
-  "comparisonId": "compare-vw-golf-bmw-320d",
+  "comparisonId": "compare-mercedes-e220-vs-skoda-fabia",
   "listings": [
     {
-      "id": "vw-golf-2014-12345678",
-      "title": "Volkswagen Golf 2.0 TDI Highline"
+      "id": "mercedes-e220-2006",
+      "title": "Mercedes-Benz E 220 CDI Avantgarde"
     },
     {
-      "id": "bmw-320d-2012-87654321",
-      "title": "BMW 320d Executive"
+      "id": "skoda-fabia-2009",
+      "title": "Škoda Fabia 1.9 TDI Elegance"
     }
   ],
   "messages": [
     {
       "id": "msg-1",
       "role": "user",
-      "content": "Which car is better value for money?",
-      "timestamp": "2024-01-15T15:00:00Z"
+      "content": "Can you compare the 2006 Mercedes E220 CDI with the 2009 Škoda Fabia? I only need two cars in this demo.",
+      "timestamp": "2025-01-15T12:00:00Z"
     },
     {
       "id": "msg-2",
       "role": "assistant",
-      "content": "Let me analyze both cars for value comparison:\n\n**Volkswagen Golf 2.0 TDI (2014) - €12,500**\n- Newer (2014 vs 2012)\n- Lower mileage (145,000 vs 168,000 km)\n- Lower price (€12,500 vs €13,800)\n- First owner (better history)\n- Manual transmission (more fuel efficient, lower maintenance)\n\n**BMW 320d (2012) - €13,800**\n- Premium brand (higher resale value potential)\n- More powerful (184 hp vs 150 hp)\n- Automatic transmission (more convenient)\n- Higher mileage (168,000 km)\n- Second owner\n\n**Value Analysis:**\nThe Golf offers better value for money because:\n- €1,300 cheaper\n- 2 years newer\n- 23,000 km less mileage\n- First owner history\n- Lower maintenance costs typically\n\nHowever, the BMW offers:\n- More prestige\n- Better performance\n- Automatic transmission\n- Potentially better long-term resale value\n\n**Recommendation:** If budget and practicality matter most, the Golf is better value. If you prioritize brand, performance, and automatic transmission, the BMW might be worth the extra cost.\n\nWould you like me to break down the maintenance costs for each?",
-      "timestamp": "2024-01-15T15:00:25Z"
+      "content": "**Quick snapshot:**\n\n|                     | Mercedes E220 (2006) | Škoda Fabia (2009) |\n|---------------------|----------------------|--------------------|\n| Price               | €2,965 (5,800 BGN)   | €3,502 (6,850 BGN) |\n| Mileage             | 255,323 km           | 204,800 km         |\n| Engine              | 2.2 CDI · 150 hp     | 1.9 TDI · 105 hp   |\n| Transmission        | Automatic            | Manual             |\n| Fuel economy (WLTP) | ~7.2 l/100 km        | ~5.2 l/100 km      |\n| Body type           | Executive sedan      | Compact hatchback  |\n\nThink of the Mercedes as a comfortable highway cruiser with huge interior space and classic W211 ride quality. The Fabia is the practical city warrior—cheaper to run, easier to park, and still robust thanks to the proven 1.9 TDI block.",
+      "timestamp": "2025-01-15T12:00:10Z"
     },
     {
       "id": "msg-3",
       "role": "user",
-      "content": "What about reliability and maintenance costs?",
-      "timestamp": "2024-01-15T15:01:00Z"
+      "content": "Which one will cost me more to keep on the road?",
+      "timestamp": "2025-01-15T12:00:40Z"
     },
     {
       "id": "msg-4",
       "role": "assistant",
-      "content": "**Reliability & Maintenance Cost Comparison:**\n\n**Volkswagen Golf 2.0 TDI:**\n- Generally reliable, but watch for:\n  - DPF issues (common in city driving)\n  - EGR valve problems\n  - Timing belt due soon (around 150,000 km)\n- Maintenance costs: Moderate\n  - Service: €200-€400 per year\n  - Parts: Readily available, moderate pricing\n  - Timing belt replacement: €400-€600\n\n**BMW 320d:**\n- Generally reliable, but premium maintenance:\n  - DPF and EGR similar concerns\n  - Automatic transmission service more expensive\n  - More complex electronics\n- Maintenance costs: Higher\n  - Service: €400-€800 per year (BMW service)\n  - Parts: More expensive (premium brand)\n  - Automatic transmission service: €300-€500\n  - Higher mileage means more wear on components\n\n**Key Differences:**\n- Golf: Lower ongoing costs, simpler to maintain\n- BMW: Higher costs, but better build quality\n- Both: Similar diesel engine concerns (DPF, EGR)\n- BMW's higher mileage (168k vs 145k) means more potential issues\n\n**Recommendation:** The Golf will likely cost less to maintain over time, especially given its lower mileage and simpler manual transmission. The BMW's premium status comes with premium maintenance costs.\n\nWould you like me to estimate total cost of ownership over 3 years?",
-      "timestamp": "2024-01-15T15:01:30Z"
+      "content": "**Running-cost perspective:**\n\n- **Mercedes E220**\n  - Annual servicing: €600–€900 (airmatic + transmission fluid every 60k)\n  - Insurance + tax: higher due to 2.2L engine and executive class\n  - Fuel: 7–8 l/100 km realistic mixed driving\n  - Watch list: SBC brake unit, suspension bushings, rust behind wheel arches\n\n- **Škoda Fabia**\n  - Annual servicing: €350–€500 (simple 1.9 TDI drivetrain)\n  - Insurance + tax: nearly half of the Mercedes\n  - Fuel: 5–5.5 l/100 km city/highway mix\n  - Watch list: EGR soot build-up, rear axle bushings, occasional injector seals\n\nIf total ownership cost is your top priority, the Fabia wins easily.",
+      "timestamp": "2025-01-15T12:01:05Z"
     },
     {
       "id": "msg-5",
       "role": "user",
-      "content": "Which one would you choose and why?",
-      "timestamp": "2024-01-15T15:02:00Z"
+      "content": "What’s the smart pick if I commute daily but still want comfort?",
+      "timestamp": "2025-01-15T12:01:30Z"
     },
     {
       "id": "msg-6",
       "role": "assistant",
-      "content": "**My Recommendation: Volkswagen Golf 2.0 TDI**\n\n**Reasons:**\n\n1. **Better Value Proposition**\n   - €1,300 cheaper upfront\n   - Lower maintenance costs over time\n   - Better fuel economy (manual vs automatic)\n\n2. **Better Condition Indicators**\n   - 2 years newer (2014 vs 2012)\n   - 23,000 km less mileage\n   - First owner (better history)\n   - Less wear and tear expected\n\n3. **Practical Advantages**\n   - Simpler manual transmission (less to go wrong)\n   - More common parts (easier/cheaper repairs)\n   - Proven reliability of Golf platform\n   - Good balance of features and cost\n\n4. **Risk Assessment**\n   - Golf: Lower risk due to newer age and lower mileage\n   - BMW: Higher risk due to age, mileage, and premium maintenance\n\n**When to Choose BMW Instead:**\n- You specifically want a premium brand\n- You need/prefer automatic transmission\n- You value performance over economy\n- Budget allows for higher maintenance costs\n- You plan to keep it short-term (resale value)\n\n**Bottom Line:** For most buyers, the Golf offers better overall value, lower risk, and lower total cost of ownership. The BMW is a good choice if brand prestige and automatic transmission are priorities, but you'll pay more upfront and over time.\n\nHave you test-driven both? That's often the deciding factor!",
-      "timestamp": "2024-01-15T15:02:45Z"
+      "content": "**Decision helper:**\n\n- Choose the **Mercedes** if you:\n  1. Drive longer highway stretches and want silence + cruise comfort\n  2. Don’t mind spending extra on suspension and premium diesel\n  3. Appreciate classic executive styling and presence\n\n- Stick with the **Škoda** if you:\n  1. Spend most of your time in dense city traffic\n  2. Need predictable, low running costs and cheaper parts\n  3. Prefer a manual gearbox and easy parking\n\n**My neutral take:** Fabia is the sensible “use every day, forget about it” choice. The Mercedes becomes the right answer only if you specifically want rear-seat comfort or already budgeted for refurbishing an older executive sedan.",
+      "timestamp": "2025-01-15T12:01:50Z"
     }
   ]
 }

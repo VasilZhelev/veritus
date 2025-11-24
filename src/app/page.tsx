@@ -26,8 +26,8 @@ export default function Home() {
         helperText: t("home.inputHelperText"),
       }}
       image={{
-        light: "https://www.launchuicomponents.com/app-dark.png",
-        dark: "https://www.launchuicomponents.com/app-dark.png",
+        light: "/Screenshot 2025-11-24 185641.png",
+        dark: "/Screenshot 2025-11-24 185641.png",
         alt: "Hero preview",
       }}
     />

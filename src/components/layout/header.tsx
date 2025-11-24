@@ -22,7 +22,11 @@ export function Header() {
 		},
 		{
 			label: t('nav.compare'),
-			href: '#',
+			href: '/compare',
+		},
+		{
+			label: t('nav.vinCheck'),
+			href: '/vin-check',
 		},
 		{
 			label: t('nav.aboutUs'),

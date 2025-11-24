@@ -219,6 +219,34 @@ export default function ListingPage() {
     return currency ? `${formatted} ${currency}` : formatted;
   };
 
+  const vinMileageKm = vinInfo.details.lastRecordedMileageKm ?? null;
+  const mileageDifference =
+    listing.mileageKm && vinMileageKm ? listing.mileageKm - vinMileageKm : null;
+  const mileageAssessment =
+    mileageDifference === null
+      ? {
+          label: "Insufficient data",
+          tone: "text-muted-foreground",
+          description: "VIN report had no mileage entry to compare."
+        }
+      : mileageDifference < 0
+      ? {
+          label: "VIN mileage is newer",
+          tone: "text-amber-600 dark:text-amber-400",
+          description: "Listing mileage is lower than the last recorded reading—ask for service proof."
+        }
+      : mileageDifference <= 20000
+      ? {
+          label: "Looks consistent",
+          tone: "text-green-600 dark:text-green-400",
+          description: "Mileage grew as expected since the last inspection."
+        }
+      : {
+          label: "Possible discrepancy",
+          tone: "text-red-600 dark:text-red-400",
+          description: "Mileage jumped a lot after the last VIN record—request maintenance logs."
+        };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Image Section */}
@@ -480,6 +508,30 @@ export default function ListingPage() {
                     <ImportMap countryCode={vinInfo.details.registrationCountry} />
                   </div>
                 )}
+                
+                {/* Mileage check */}
+                <div className="p-5 rounded-2xl bg-background/70 border border-border/30">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <div className="text-xs uppercase tracking-wider text-muted-foreground">Mileage check</div>
+                      <div className={cn("text-lg font-semibold", mileageAssessment.tone)}>
+                        {mileageAssessment.label}
+                      </div>
+                    </div>
+                    {vinMileageKm && (
+                      <Badge variant="secondary" className="rounded-full">
+                        VIN: {new Intl.NumberFormat("en-US").format(vinMileageKm)} km
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">{mileageAssessment.description}</p>
+                  {mileageDifference !== null && (
+                    <div className="mt-3 text-xs text-muted-foreground/80">
+                      Last record: {vinInfo.details.lastRecordedDate ?? "—"} · Difference:{" "}
+                      {new Intl.NumberFormat("en-US").format(Math.abs(mileageDifference))} km
+                    </div>
+                  )}
+                </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   {[

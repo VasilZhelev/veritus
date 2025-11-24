@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -43,14 +44,15 @@
   --radius-xl: calc(var(--radius) + 4px);
   --animate-appear-zoom: appear-zoom 0.5s ease-out forwards;
   --animate-appear: appear 0.5s ease-out forwards;
-  --color-brand-foreground: var(----brand-foreground);
-  --color-brand: var(----brand);
+  --color-brand-foreground: var(--brand-foreground);
+  --color-brand: var(--brand);
 
   @keyframes appear-zoom {
     0% {
       opacity: 0;
       transform: scale(0.95);
     }
+
     100% {
       opacity: 1;
       transform: scale(1);
@@ -62,41 +64,25 @@
       opacity: 0;
       transform: translateY(10px);
     }
+
     100% {
       opacity: 1;
       transform: translateY(0);
     }
   }
-  @keyframes appear-zoom {
-  0% {
-    opacity: 0;
-    transform: scale(0.95);
-    }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-    }
-  }
-  @keyframes appear {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-    }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-    }
-  }
+
   --color-destructive-foreground: var(--destructive-foreground);
-  --radius: var(----radius)
+  --radius: var(--radius);
 }
 
 :root {
   --radius: 0.625rem;
 
   /* --- Base --- */
-  --background: oklch(0.98 0.01 230); /* frosty gray-blue */
-  --foreground: oklch(0.18 0.03 250); /* deep slate text */
+  --background: oklch(0.98 0.01 230);
+  /* frosty gray-blue */
+  --foreground: oklch(0.18 0.03 250);
+  /* deep slate text */
 
   --card: oklch(0.985 0.01 235);
   --card-foreground: oklch(0.18 0.03 250);
@@ -105,7 +91,8 @@
   --popover-foreground: oklch(0.18 0.03 250);
 
   /* --- Primary --- */
-  --primary: oklch(0.55 0.13 240); /* cold blue accent */
+  --primary: oklch(0.55 0.13 240);
+  /* cold blue accent */
   --primary-foreground: oklch(0.985 0.01 250);
 
   /* --- Secondary --- */
@@ -117,11 +104,13 @@
   --muted-foreground: oklch(0.55 0.03 250);
 
   /* --- Accent (AI Glow / Electric Cyan) --- */
-  --accent: oklch(0.78 0.15 190); /* cold neon cyan */
+  --accent: oklch(0.78 0.15 190);
+  /* cold neon cyan */
   --accent-foreground: oklch(0.15 0.03 250);
 
   /* --- Status / Alerts --- */
-  --destructive: oklch(0.56 0.18 20); /* still red but subdued */
+  --destructive: oklch(0.56 0.18 20);
+  /* still red but subdued */
   --border: oklch(0.88 0.02 240);
   --input: oklch(0.88 0.02 240);
   --ring: oklch(0.7 0.05 240);
@@ -149,7 +138,8 @@
 }
 
 .dark {
-  --background: oklch(0.15 0.02 250); /* deep cold graphite */
+  --background: oklch(0.15 0.02 250);
+  /* deep cold graphite */
   --foreground: oklch(0.97 0.01 250);
 
   --card: oklch(0.18 0.03 250);
@@ -158,7 +148,8 @@
   --popover: oklch(0.18 0.03 250);
   --popover-foreground: oklch(0.97 0.01 250);
 
-  --primary: oklch(0.65 0.12 240); /* icy blue */
+  --primary: oklch(0.65 0.12 240);
+  /* icy blue */
   --primary-foreground: oklch(0.97 0.01 250);
 
   --secondary: oklch(0.25 0.02 250);
@@ -167,7 +158,8 @@
   --muted: oklch(0.25 0.02 250);
   --muted-foreground: oklch(0.68 0.04 250);
 
-  --accent: oklch(0.72 0.16 190); /* glowing cyan */
+  --accent: oklch(0.72 0.16 190);
+  /* glowing cyan */
   --accent-foreground: oklch(0.10 0.03 250);
 
   --destructive: oklch(0.56 0.18 20);
@@ -199,6 +191,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

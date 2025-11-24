@@ -8,7 +8,10 @@
     "registrationCountry": "DE",
     "price": null,
     "currency": null,
-    "imported": true
+    "imported": true,
+    "lastRecordedMileageKm": 132000,
+    "lastRecordedDate": "2023-11-10",
+    "mileageSource": "TÜV Rheinland report"
   }
 }
 

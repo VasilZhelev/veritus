@@ -25,6 +25,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.getStarted": "Get Started",
     "nav.settings": "Settings",
     "nav.signOut": "Sign Out",
+    "nav.vinCheck": "VIN Check",
     
     // Home page
     "home.badge": "Introducing",
@@ -103,6 +104,7 @@ const translations: Record<Language, Record<string, string>> = {
     "nav.getStarted": "Започнете",
     "nav.settings": "Настройки",
     "nav.signOut": "Изход",
+    "nav.vinCheck": "Проверка на VIN",
     
     // Home page
     "home.badge": "Представяме",

@@ -1,73 +1,184 @@
 {
+  "selectedIds": [
+    "mercedes-e220-2006",
+    "skoda-fabia-2009"
+  ],
   "listings": [
     {
+      "id": "mercedes-e220-2006",
+      "source": "mobilebg",
+      "url": "https://www.mobile.bg/obiava-11760942424737478-mercedes-benz-e-220-220-cdi",
+      "title": "Mercedes-Benz E 220 CDI Avantgarde",
+      "subtitle": "2.2 CDI · 5G-Tronic · RWD",
+      "priceEuro": 2965.49,
+      "priceLeva": 5800,
+      "currency": "EUR",
+      "mileageKm": 255323,
+      "year": 2006,
+      "engine": "Diesel · 2.2L · 150 hp",
+      "transmission": "Automatic",
+      "drive": "RWD",
+      "body": "Sedan",
+      "consumption": "7.2 l/100 km combined",
+      "images": [
+        "https://example.com/images/mercedes-e220-2006-1.jpg",
+        "https://example.com/images/mercedes-e220-2006-2.jpg",
+        "https://example.com/images/mercedes-e220-2006-3.jpg"
+      ],
+      "highlights": [
+        "Long wheelbase comfort",
+        "Full leather with memory seats",
+        "Recent transmission service"
+      ],
+      "pros": [
+        "Legendary W211 chassis comfort",
+        "Proven 2.2 CDI torque for highway cruising",
+        "Lowest asking price in segment"
+      ],
+      "cons": [
+        "High mileage — suspension refresh likely",
+        "Older infotainment",
+        "Euro 4 emission zone limitations"
+      ],
+      "location": "Sofia, Bulgaria",
+      "postedAt": "18.11.2025 07:22",
+      "vin": "WDB2110061A123456",
+      "seller": {
+        "name": "CORTEG LTD",
+        "memberSince": "2018",
+        "rating": 4.8
+      },
+      "isDemoOnly": false
+    },
+    {
+      "id": "skoda-fabia-2009",
+      "source": "mobilebg",
+      "url": "https://www.mobile.bg/obiava-11657564365550150-skoda-fabia-1-9-tdi-klimatronik",
+      "title": "Škoda Fabia 1.9 TDI Elegance",
+      "subtitle": "1.9 TDI · 5-speed Manual · FWD",
+      "priceEuro": 3502.35,
+      "priceLeva": 6850,
+      "currency": "EUR",
+      "mileageKm": 204800,
+      "year": 2009,
+      "engine": "Diesel · 1.9L · 105 hp",
+      "transmission": "Manual",
+      "drive": "FWD",
+      "body": "Hatchback",
+      "consumption": "5.2 l/100 km combined",
+      "images": [
+        "https://example.com/images/skoda-fabia-2009-1.jpg",
+        "https://example.com/images/skoda-fabia-2009-2.jpg",
+        "https://example.com/images/skoda-fabia-2009-3.jpg",
+        "https://example.com/images/skoda-fabia-2009-4.jpg"
+      ],
+      "highlights": [
+        "One-owner city car",
+        "Climatronic dual-zone HVAC",
+        "Full service history at Škoda"
+      ],
+      "pros": [
+        "Lower mileage than the Mercedes",
+        "Cheaper maintenance and insurance",
+        "Compact size for urban driving"
+      ],
+      "cons": [
+        "Less highway presence",
+        "Manual gearbox only",
+        "Cabin noise above 120 km/h"
+      ],
+      "location": "Sofia, Bulgaria",
+      "postedAt": "18.11.2025 21:53",
+      "vin": "TMBAK25JX91234567",
+      "seller": {
+        "name": "Spasov Auto",
+        "memberSince": "2017",
+        "rating": 4.5
+      },
+      "isDemoOnly": false
+    },
+    {
+      "id": "vw-golf-2014",
       "source": "mobilebg",
       "url": "https://www.mobile.bg/obiavi/avtomobili/volkswagen/golf/12345678",
       "title": "Volkswagen Golf 2.0 TDI Highline",
-      "price": 12500,
-      "currency": "EUR",
+      "subtitle": "2014 · 2.0 TDI · Manual",
       "priceEuro": 12500,
       "priceLeva": 24450,
-      "description": "Отлично поддържан автомобил, първи собственик, сервизна книжка, без забележки. Автомобилът е в перфектно състояние, без ръждя, без удари. Регулярно обслужване в оторизиран сервиз. Всички документи са наред. Готов за тест драйв.",
+      "currency": "EUR",
+      "mileageKm": 145000,
+      "year": 2014,
+      "engine": "Diesel · 2.0L · 150 hp",
+      "transmission": "Manual",
+      "drive": "FWD",
+      "body": "Hatchback",
+      "consumption": "4.8 l/100 km combined",
       "images": [
         "https://example.com/images/vw-golf-2014-1.jpg",
         "https://example.com/images/vw-golf-2014-2.jpg",
         "https://example.com/images/vw-golf-2014-3.jpg"
       ],
-      "attributes": {
-        "Марка": "Volkswagen",
-        "Модел": "Golf",
-        "Дата на производство": "2014",
-        "Пробег": "145000 км",
-        "Двигател": "Дизел / 2.0 TDI / 150 к.с.",
-        "Скоростна кутия": "Ръчна",
-        "Цвят": "Син металлик",
-        "Вътрешен цвят": "Черен",
-        "Брой врати": "5",
-        "Брой места": "5",
-        "Категория": "Лека",
-        "Местоположение": "София",
-        "Особености": "Климатик, Навигационна система, Кожен салон, Круиз контрол, Ел. стъкла, Ел. огледала, Алерт система, Парктроник, LED фарове, Мултифункционален волан"
-      },
-      "location": "София",
+      "highlights": [
+        "Highline trim",
+        "Digital service history"
+      ],
+      "pros": [
+        "Balanced package",
+        "Strong resale market"
+      ],
+      "cons": [
+        "Manual only in stock"
+      ],
+      "location": "Sofia, Bulgaria",
       "postedAt": "15.01.2024 14:30",
-      "mileageKm": 145000,
-      "year": 2014
+      "vin": "WVWZZZAUZEP123456",
+      "seller": {
+        "name": "Demo Motors",
+        "memberSince": "2020",
+        "rating": 4.7
+      },
+      "isDemoOnly": true
     },
     {
+      "id": "bmw-320d-2012",
       "source": "mobilebg",
       "url": "https://www.mobile.bg/obiavi/avtomobili/bmw/3-series/87654321",
       "title": "BMW 320d Executive",
-      "price": 13800,
-      "currency": "EUR",
+      "subtitle": "2012 · 2.0d · Automatic",
       "priceEuro": 13800,
       "priceLeva": 27000,
-      "description": "Прекрасен автомобил в отлично състояние. Втори собственик, пълна сервизна история. Автомобилът е обслужван редовно в оторизиран сервиз BMW. Без скрити дефекти, без ръждя. Всички екстри са в работещо състояние. Готов за тест драйв и преглед.",
+      "currency": "EUR",
+      "mileageKm": 168000,
+      "year": 2012,
+      "engine": "Diesel · 2.0L · 184 hp",
+      "transmission": "Automatic",
+      "drive": "RWD",
+      "body": "Sedan",
+      "consumption": "5.6 l/100 km combined",
       "images": [
         "https://example.com/images/bmw-320d-2012-1.jpg",
         "https://example.com/images/bmw-320d-2012-2.jpg",
-        "https://example.com/images/bmw-320d-2012-3.jpg",
-        "https://example.com/images/bmw-320d-2012-4.jpg"
+        "https://example.com/images/bmw-320d-2012-3.jpg"
       ],
-      "attributes": {
-        "Марка": "BMW",
-        "Модел": "3 Series",
-        "Дата на производство": "2012",
-        "Пробег": "168000 км",
-        "Двигател": "Дизел / 2.0 / 184 к.с.",
-        "Скоростна кутия": "Автоматична",
-        "Цвят": "Черен металлик",
-        "Вътрешен цвят": "Бежов",
-        "Брой врати": "4",
-        "Брой места": "5",
-        "Категория": "Лека",
-        "Местоположение": "Пловдив",
-        "Особености": "Климатконтрол, Навигация iDrive, Кожен салон, Круиз контрол, Ел. стъкла, Ел. огледала, Парктроник, Ксенонови фарове, Спортни джанти, Мултифункционален волан, Bluetooth"
-      },
-      "location": "Пловдив",
+      "highlights": [
+        "M sport package",
+        "Recent gearbox service"
+      ],
+      "pros": [
+        "Premium driving feel"
+      ],
+      "cons": [
+        "Highest maintenance cost"
+      ],
+      "location": "Plovdiv, Bulgaria",
       "postedAt": "12.01.2024 10:15",
-      "mileageKm": 168000,
-      "year": 2012
+      "vin": "WBA3D3C5XEK123456",
+      "seller": {
+        "name": "Executive Auto",
+        "memberSince": "2016",
+        "rating": 4.6
+      },
+      "isDemoOnly": true
     }
   ]
 }
