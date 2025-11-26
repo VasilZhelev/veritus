@@ -87,8 +87,8 @@ export function HeroSection({
       return;
     }
 
-    // For demo: redirect to listing page with demo data
-    router.push(`/listing/demo`);
+    // Redirect to scrape page with the URL
+    router.push(`/scrape?url=${encodeURIComponent(link)}`);
   };
 
   return (

@@ -22,7 +22,13 @@ function resolveAbsoluteUrl(candidate: string, origin: string): string {
 }
 
 function grabTitle($: CheerioAPI): string | undefined {
-  const titleNode = $("div.obTitle h1").first();
+  let titleNode = $("div.obTitle h1").first();
+  
+  // Fallback: try div.obTitle directly if h1 is missing
+  if (titleNode.length === 0) {
+    titleNode = $("div.obTitle").first();
+  }
+
   if (titleNode.length === 0) {
     return undefined;
   }
@@ -184,6 +190,7 @@ function grabLocation($: CheerioAPI): string | undefined {
 function grabAttributes($: CheerioAPI): Record<string, string> {
   const attributes: Record<string, string> = {};
 
+  // Extract from ul.parameters > li
   $("ul.parameters > li").each((_, li) => {
     const key = cleanText($(li).find("span.label").text());
     const value = cleanText($(li).find("span.value").text());
@@ -192,6 +199,19 @@ function grabAttributes($: CheerioAPI): Record<string, string> {
     }
   });
 
+  // Extract from .techData .items .item (technical data section)
+  $(".techData .items .item").each((_, item) => {
+    const children = $(item).children();
+    if (children.length >= 2) {
+      const key = cleanText(children.eq(0).text());
+      const value = cleanText(children.eq(1).text());
+      if (key && value) {
+        attributes[key] = value;
+      }
+    }
+  });
+
+  // Extract features from div.details ul li
   const features: string[] = [];
   $("div.details ul li").each((_, li) => {
     const feature = cleanText($(li).text());

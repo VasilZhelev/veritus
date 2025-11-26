@@ -44,6 +44,7 @@ export function normalizeCarListing(raw: RawCarListing): CarListing {
   const priceLeva = parseNumber(raw.priceLevaRaw) ?? null;
   const mileageKm = parseInteger(raw.mileageText);
   const year = parseInteger(raw.yearText);
+  const vin = raw.vin ? cleanText(raw.vin) : null;
 
   return {
     source: raw.source,
@@ -56,6 +57,7 @@ export function normalizeCarListing(raw: RawCarListing): CarListing {
     priceLeva,
     mileageKm,
     year,
+    vin,
     location: cleanText(raw.location ?? "") || null,
     postedAt: cleanText(raw.postedAt ?? "") || null,
     images: uniqueStrings(raw.images ?? []),

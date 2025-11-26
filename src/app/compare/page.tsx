@@ -53,14 +53,20 @@ function TypingMessage({ content, onComplete }: { content: string; onComplete: (
   );
 }
 
+const suggestionQuestions = [
+  "Which car is better for daily commuting?",
+  "What are the main differences?",
+  "Which one has lower maintenance costs?",
+  "Which car is more fuel efficient?",
+];
+
 export default function ComparePage() {
   // In a real app, these would be managed by global state or URL params
   const [selectedIds, setSelectedIds] = useState<string[]>(compareData.selectedIds);
-  const [messages, setMessages] = useState<ChatMessage[]>(
-    chatHistory.messages.map(msg => ({ ...msg, isTyping: false, role: msg.role as "user" | "assistant" }))
-  );
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [usedSuggestions, setUsedSuggestions] = useState<Set<string>>(new Set());
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const selectedListings = compareData.listings.filter(l => selectedIds.includes(l.id));
@@ -69,45 +75,14 @@ export default function ComparePage() {
 const getValue = (listing: any, key: string) => listing[key];
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  // Automatically show messages with typing effect on mount
-  useEffect(() => {
-    if (chatHistory.messages.length > 0) {
-      const loadMessages = async () => {
-        const allMessages: ChatMessage[] = [];
-        
-        for (let i = 0; i < chatHistory.messages.length; i++) {
-          const msg = chatHistory.messages[i] as ChatMessage;
-          
-          if (msg.role === "user") {
-            // Add user messages instantly
-            allMessages.push({ ...msg, isTyping: false });
-            setMessages([...allMessages]);
-            await new Promise(resolve => setTimeout(resolve, 500));
-          } else {
-            // Add assistant messages with typing animation
-            setIsTyping(true);
-            allMessages.push({ ...msg, isTyping: true });
-            setMessages([...allMessages]);
-            
-            // Wait for typing to complete (estimated time based on content length)
-            await new Promise(resolve => setTimeout(resolve, msg.content.length * 12 + 500));
-            
-            // Mark as completed
-            allMessages[allMessages.length - 1] = { ...msg, isTyping: false };
-            setMessages([...allMessages]);
-            setIsTyping(false);
-            
-            await new Promise(resolve => setTimeout(resolve, 300));
-          }
-        }
-      };
-      
-      loadMessages();
+    // Scroll the chat container to the bottom
+    if (chatEndRef.current) {
+      const scrollContainer = chatEndRef.current.parentElement;
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
     }
-  }, []);
+  }, [messages]);
 
   const handleTypingComplete = (messageId: string) => {
     setMessages((prev) =>
@@ -116,6 +91,38 @@ const getValue = (listing: any, key: string) => listing[key];
       )
     );
     setIsTyping(false);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setInput(suggestion);
+    setUsedSuggestions(prev => new Set(prev).add(suggestion));
+  };
+
+  const getAIResponse = (userMessage: string): string => {
+    const lowerMessage = userMessage.toLowerCase();
+    
+    // Main comparison overview
+    if (lowerMessage.includes("difference") || lowerMessage.includes("compare")) {
+      return "**Quick snapshot:**\n\n|                     | Mercedes E220 (2006) | Škoda Fabia (2009) |\n|---------------------|----------------------|--------------------|\n| Price               | €2,965 (5,800 BGN)   | €3,502 (6,850 BGN) |\n| Mileage             | 255,323 km           | 204,800 km         |\n| Engine              | 2.2 CDI · 150 hp     | 1.9 TDI · 105 hp   |\n| Transmission        | Automatic            | Manual             |\n| Fuel economy (WLTP) | ~7.2 l/100 km        | ~5.2 l/100 km      |\n| Body type           | Executive sedan      | Compact hatchback  |\n\nThink of the Mercedes as a comfortable highway cruiser with huge interior space and classic W211 ride quality. The Fabia is the practical city warrior—cheaper to run, easier to park, and still robust thanks to the proven 1.9 TDI block.";
+    }
+    
+    // Maintenance costs
+    if (lowerMessage.includes("maintenance") || lowerMessage.includes("cost")) {
+      return "**Running-cost perspective:**\n\n- **Mercedes E220**\n  - Annual servicing: €600–€900 (airmatic + transmission fluid every 60k)\n  - Insurance + tax: higher due to 2.2L engine and executive class\n  - Fuel: 7–8 l/100 km realistic mixed driving\n  - Watch list: SBC brake unit, suspension bushings, rust behind wheel arches\n\n- **Škoda Fabia**\n  - Annual servicing: €350–€500 (simple 1.9 TDI drivetrain)\n  - Insurance + tax: nearly half of the Mercedes\n  - Fuel: 5–5.5 l/100 km city/highway mix\n  - Watch list: EGR soot build-up, rear axle bushings, occasional injector seals\n\nIf total ownership cost is your top priority, the Fabia wins easily.";
+    }
+    
+    // Fuel efficiency
+    if (lowerMessage.includes("fuel") || lowerMessage.includes("efficient")) {
+      return "**Fuel efficiency comparison:**\n\n- **Škoda Fabia 1.9 TDI:** ~5.2 l/100 km (city/highway mix)\n  - Smaller, lighter engine\n  - Excellent for daily commuting\n  - Realistic range: ~800-900 km per tank\n\n- **Mercedes E220 CDI:** ~7.2 l/100 km (mixed driving)\n  - Larger executive sedan with more weight\n  - Still respectable for its class\n  - Realistic range: ~700-800 km per tank\n\nThe Fabia is the clear winner here, consuming about 30-35% less fuel than the Mercedes.";
+    }
+    
+    // Daily commuting
+    if (lowerMessage.includes("commut") || lowerMessage.includes("daily")) {
+      return "**Decision helper for daily commuting:**\n\n- Choose the **Mercedes** if you:\n  1. Drive longer highway stretches and want silence + cruise comfort\n  2. Don't mind spending extra on suspension and premium diesel\n  3. Appreciate classic executive styling and presence\n\n- Stick with the **Škoda** if you:\n  1. Spend most of your time in dense city traffic\n  2. Need predictable, low running costs and cheaper parts\n  3. Prefer a manual gearbox and easy parking\n\n**My neutral take:** Fabia is the sensible \"use every day, forget about it\" choice. The Mercedes becomes the right answer only if you specifically want rear-seat comfort or already budgeted for refurbishing an older executive sedan.";
+    }
+    
+    // Default response
+    return "I can help you compare these cars! Feel free to ask about:\n- Main differences and specifications\n- Maintenance and running costs\n- Fuel efficiency\n- Which is better for daily commuting";
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
@@ -131,6 +138,7 @@ const getValue = (listing: any, key: string) => listing[key];
     };
 
     setMessages([...messages, newMessage]);
+    const userInput = input;
     setInput("");
     setIsTyping(true);
 
@@ -139,7 +147,7 @@ const getValue = (listing: any, key: string) => listing[key];
       const aiResponse: ChatMessage = {
         id: `msg-ai-${Date.now()}`,
         role: "assistant",
-        content: "This is a demo interaction. In the full version, I would analyze your specific question about these cars.",
+        content: getAIResponse(userInput),
         timestamp: new Date().toISOString(),
         isTyping: true,
       };
@@ -310,6 +318,26 @@ const getValue = (listing: any, key: string) => listing[key];
                 </div>
               </ScrollArea>
             </CardContent>
+
+            {/* Suggestions */}
+            {suggestionQuestions.filter(s => !usedSuggestions.has(s)).length > 0 && (
+              <div className="px-4 pb-3">
+                <div className="flex flex-wrap gap-2">
+                  {suggestionQuestions
+                    .filter(suggestion => !usedSuggestions.has(suggestion))
+                    .map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="text-xs px-3 py-2 rounded-full bg-muted/40 hover:bg-muted/60 border border-border/30 text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-[1.02] text-left"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
+
             <div className="p-3 border-t bg-background">
               <form onSubmit={handleSendMessage} className="flex gap-2">
                 <div className="relative flex-1">

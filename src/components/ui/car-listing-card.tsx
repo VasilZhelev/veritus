@@ -36,6 +36,7 @@ export interface CarListing {
   location?: string;
   description?: string;
   createdAt: string;
+  vin?: string;
   [key: string]: any; // Allow other properties
 }
 
@@ -52,7 +53,7 @@ export function CarListingCard({
 }: CarListingCardProps) {
   const formatPrice = (price?: number, currency?: string) => {
     if (!price) return "Price not available";
-    const formatted = new Intl.NumberFormat("bg-BG").format(price); // Use Bulgarian format for consistency
+    const formatted = new Intl.NumberFormat("bg-BG").format(price);
     return currency ? `${formatted} ${currency}` : formatted;
   };
 
@@ -61,35 +62,12 @@ export function CarListingCard({
     return `${new Intl.NumberFormat("bg-BG").format(mileage)} km`;
   };
 
-  // Attributes to exclude from the "Other Attributes" section
   const excludedAttributes = [
-    "id",
-    "url",
-    "image",
-    "brand",
-    "model",
-    "year",
-    "price",
-    "currency",
-    "mileage",
-    "fuelType",
-    "transmission",
-    "location",
-    "description",
-    "createdAt",
-    "source",
-    "title",
-    "priceText",
-    "mileageText",
-    "yearText",
-    "rawDetails",
-    "images",
-    "postedAt",
-    "Дата на производство", // Already shown as 'year'
-    "Пробег", // Already shown as 'mileage'
-    "Двигател", // Already shown as 'fuelType'
-    "Скоростна кутия", // Already shown as 'transmission'
-    "Местоположение", // Already shown as 'location'
+    "id", "url", "image", "brand", "model", "year", "price", "currency",
+    "mileage", "fuelType", "transmission", "location", "description",
+    "createdAt", "source", "title", "priceText", "mileageText", "yearText",
+    "rawDetails", "images", "postedAt", "vin",
+    "Дата на производство", "Пробег", "Двигател", "Скоростна кутия", "Местоположение",
   ];
 
   const otherAttributes = Object.entries(listing.attributes || {}).filter(
@@ -106,7 +84,6 @@ export function CarListingCard({
         className,
       )}
     >
-      {/* Image Section */}
       <div className="relative w-full h-72 overflow-hidden bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900">
         {listing.image ? (
           <Image
@@ -151,10 +128,7 @@ export function CarListingCard({
             )}
           </div>
           {listing.price && (
-            <Badge
-              variant="secondary"
-              className="text-lg font-semibold px-4 py-2"
-            >
+            <Badge variant="secondary" className="text-lg font-semibold px-4 py-2">
               {formatPrice(listing.price, listing.currency)}
             </Badge>
           )}
@@ -216,7 +190,7 @@ export function CarListingCard({
            <div className="mb-6">
             <h4 className="font-semibold text-md mb-3">Особености</h4>
             <div className="columns-2 sm:columns-3 text-sm text-muted-foreground">
-              {features.map((feature) => (
+              {features.map((feature: string) => (
                 <div key={feature} className="mb-1">{feature}</div>
               ))}
             </div>

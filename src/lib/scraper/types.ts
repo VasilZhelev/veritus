@@ -17,6 +17,7 @@ export interface CarListing {
   postedAt: string | null;
   mileageKm: number | null;
   year: number | null;
+  vin?: string | null;
 }
 
 export interface RawCarListing {
@@ -34,6 +35,7 @@ export interface RawCarListing {
   postedAt?: string;
   mileageText?: string;
   yearText?: string;
+  vin?: string;
   rawDetails?: Record<string, unknown>;
 }
 

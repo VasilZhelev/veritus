@@ -4,55 +4,41 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  CarListingCard,
   CarListing,
 } from "@/components/ui/car-listing-card";
+import { ListingDashboard } from "@/components/dashboard/ListingDashboard";
 
-// Helper function to transform scraped data into a CarListing object
+// Helper function to transform scraped data into a CarListing object for the dashboard
 const transformScrapedData = (data: any): CarListing => {
-  const {
-    title,
-    priceText,
-    currency,
-    images,
-    location,
-    description,
-    attributes,
-    url,
-    postedAt,
-  } = data;
-
-  // Extract brand and model from title
-  const [brand, model] = title ? title.split(/ (.*)/s) : ["Unknown", ""];
-
-  // Parse Year from "Дата на производство"
-  const yearText = attributes?.["Дата на производство"];
-  const year = yearText ? parseInt(yearText.match(/\d{4}/)?.[0] || "0") : undefined;
-
-  // Parse Mileage
-  const mileageText = attributes?.["Пробег"];
-  const mileage = mileageText ? parseInt(mileageText.replace(/\D/g, "")) : undefined;
+  // The API returns { listing, raw } structure
+  const normalizedListing = data.listing || data;
   
-  // Get Fuel Type and Transmission
-  const fuelType = attributes?.["Двигател"] ?? undefined;
-  const transmission = attributes?.["Скоростна кутия"] ?? undefined;
+  // Extract brand and model from title
+  const title = normalizedListing.title || "";
+  const [brand, model] = title ? title.split(/ (.*)/) : ["Unknown", ""];
 
   return {
-    id: url || new Date().toISOString(), // Use URL as a unique ID
-    url: url,
-    image: images && images.length > 0 ? images[0] : undefined,
+    id: normalizedListing.url || new Date().toISOString(),
+    url: normalizedListing.url,
+    image: normalizedListing.images && normalizedListing.images.length > 0 ? normalizedListing.images[0] : undefined,
+    images: normalizedListing.images || [],
     brand: brand,
     model: model || "",
-    year: year,
-    price: priceText ? parseFloat(priceText.replace(/\s/g, "")) : undefined,
-    currency: currency,
-    mileage: mileage,
-    fuelType: fuelType,
-    transmission: transmission,
-    location: location,
-    description: description,
-    createdAt: postedAt || new Date().toISOString(),
-    attributes: attributes, // Pass all attributes
+    title: normalizedListing.title,
+    year: normalizedListing.year,
+    price: normalizedListing.priceEuro || normalizedListing.price,
+    currency: normalizedListing.priceEuro ? "EUR" : normalizedListing.currency,
+    priceLeva: normalizedListing.priceLeva,
+    mileage: normalizedListing.mileageKm,
+    mileageKm: normalizedListing.mileageKm,
+    fuelType: normalizedListing.attributes?.["Двигател"],
+    transmission: normalizedListing.attributes?.["Скоростна кутия"],
+    location: normalizedListing.location,
+    description: normalizedListing.description,
+    createdAt: normalizedListing.postedAt || new Date().toISOString(),
+    postedAt: normalizedListing.postedAt,
+    attributes: normalizedListing.attributes || {},
+    vin: normalizedListing.vin || normalizedListing.attributes?.["VIN номер"],
   };
 };
 
@@ -87,6 +73,7 @@ export default function ScrapePage() {
           }
 
           const result = await response.json();
+          console.log("Scrape result:", JSON.stringify(result, null, 2));
           setData(result);
           setListing(transformScrapedData(result));
         } catch (err: any) {
@@ -108,33 +95,28 @@ export default function ScrapePage() {
     );
   }
 
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-8 text-center">Scraped Listing</h1>
-      {loading && (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      )}
-      {error && (
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-4">
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
           <strong className="font-bold">Error:</strong>
           <span className="block sm:inline"> {error}</span>
         </div>
-      )}
-      {listing && (
-        <div className="max-w-4xl mx-auto">
-          <CarListingCard listing={listing} />
-        </div>
-      )}
-      {data && (
-        <div className="mt-8">
-          <h2 className="text-xl font-bold mb-4">Raw Scraped Data (for testing)</h2>
-          <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        </div>
-      )}
-    </div>
-  );
+      </div>
+    );
+  }
+
+  if (listing) {
+    return <ListingDashboard listing={listing} />;
+  }
+
+  return null;
 }
