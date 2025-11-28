@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   CarListing,
@@ -31,7 +31,7 @@ const transformScrapedData = (data: any): CarListing => {
     priceLeva: normalizedListing.priceLeva,
     mileage: normalizedListing.mileageKm,
     mileageKm: normalizedListing.mileageKm,
-    fuelType: normalizedListing.attributes?.["Двигател"],
+    fuelType: normalizedListing.attributes?.[" Двигател"],
     transmission: normalizedListing.attributes?.["Скоростна кутия"],
     location: normalizedListing.location,
     description: normalizedListing.description,
@@ -42,7 +42,7 @@ const transformScrapedData = (data: any): CarListing => {
   };
 };
 
-export default function ScrapePage() {
+function ScrapePageContent() {
   const searchParams = useSearchParams();
   const url = searchParams.get("url");
   const [listing, setListing] = useState<CarListing | null>(null);
@@ -119,4 +119,16 @@ export default function ScrapePage() {
   }
 
   return null;
+}
+
+export default function ScrapePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <ScrapePageContent />
+    </Suspense>
+  );
 }
