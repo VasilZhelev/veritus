@@ -34,7 +34,7 @@ export function ListingHeader({ listing }: ListingHeaderProps) {
             alt={listing.title || "Car background"}
             fill
             className={cn(
-              "object-cover transition-opacity duration-700 blur-sm scale-105",
+              "object-cover transition-opacity duration-700 blur-[2px] scale-105",
               isImageLoaded ? "opacity-100" : "opacity-0"
             )}
             onLoad={() => setIsImageLoaded(true)}
