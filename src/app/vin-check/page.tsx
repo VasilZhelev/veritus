@@ -7,6 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Search, CheckCircle, AlertTriangle, Info } from "lucide-react";
 import vinData from "@/lib/demo/vin-checker-output.json";
+import dynamic from "next/dynamic";
+
+const ImportMap = dynamic(() => import("@/components/ui/import-map"), {
+  ssr: false,
+  loading: () => <div className="h-[300px] w-full bg-muted animate-pulse rounded-md flex items-center justify-center text-muted-foreground">Loading Map...</div>
+});
 
 export default function VinCheckPage() {
   const [vin, setVin] = useState("");
@@ -146,6 +152,20 @@ export default function VinCheckPage() {
               </CardContent>
             </Card>
           </div>
+
+          {result.details.registrationCountry && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Vehicle Origin</CardTitle>
+                <CardDescription>
+                  Imported from {result.details.registrationCountry}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ImportMap countryCode={result.details.registrationCountry} />
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>

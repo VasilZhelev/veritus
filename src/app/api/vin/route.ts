@@ -22,17 +22,39 @@ export async function POST(req: Request) {
 
     const data = await res.json();
 
+    // Extract country from VIN if not provided by API
+    // VIN first character indicates manufacturing region
+    const getCountryFromVIN = (vin: string): string | null => {
+      const firstChar = vin[0].toUpperCase();
+      const wmiMap: Record<string, string> = {
+        '1': 'US', '4': 'US', '5': 'US', // USA
+        '2': 'CA', // Canada
+        '3': 'MX', // Mexico
+        'J': 'JP', // Japan
+        'K': 'KR', // South Korea
+        'L': 'CN', // China
+        'S': 'GB', // UK
+        'V': 'FR', // France (also Spain)
+        'W': 'DE', // Germany
+        'Y': 'SE', // Sweden (also Finland)
+        'Z': 'IT', // Italy
+      };
+      return wmiMap[firstChar] || null;
+    };
+
+    const detectedCountry = data.registrationCountry || getCountryFromVIN(vinUpper);
+
     // Build the details object
     const details = {
         make: data.brand || null,
         model: data.model || null,
         year: data.year || null,
         fuel: data.fuelType || null,
-        registrationCountry: data.registrationCountry || null,
+        registrationCountry: detectedCountry,
         price: data.price || null,
         currency: data.currency || null,
-        imported: data.registrationCountry
-          ? data.registrationCountry !== "BG"
+        imported: detectedCountry
+          ? detectedCountry !== "BG"
           : vinUpper[0].toUpperCase() !== "S", // fallback
       };
       

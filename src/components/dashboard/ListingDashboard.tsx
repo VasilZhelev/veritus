@@ -64,38 +64,19 @@ function TypingMessage({ content, onComplete }: { content: string; onComplete: (
   );
 }
 
-// Map component for import location
+// Dynamic import for the map component (client-side only)
+import dynamic from "next/dynamic";
+
+const LeafletMap = dynamic(() => import("@/components/ui/import-map"), {
+  ssr: false,
+  loading: () => <div className="h-full w-full bg-muted animate-pulse rounded flex items-center justify-center text-muted-foreground text-xs">Loading Map...</div>
+});
+
+// Map component wrapper
 function ImportMap({ countryCode }: { countryCode: string }) {
-  // Map country codes to coordinates (simplified)
-  const countryCoords: Record<string, { lat: number; lng: number; name: string }> = {
-    DE: { lat: 51.1657, lng: 10.4515, name: "Germany" },
-    FR: { lat: 46.2276, lng: 2.2137, name: "France" },
-    IT: { lat: 41.8719, lng: 12.5674, name: "Italy" },
-    UK: { lat: 55.3781, lng: -3.4360, name: "United Kingdom" },
-    BG: { lat: 42.7339, lng: 25.4858, name: "Bulgaria" },
-  };
-
-  const location = countryCoords[countryCode] || countryCoords.DE;
-  const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${location.lng - 2}%2C${location.lat - 2}%2C${location.lng + 2}%2C${location.lat + 2}&layer=mapnik&marker=${location.lat}%2C${location.lng}`;
-
   return (
-    <div className="relative w-full h-64 rounded-2xl overflow-hidden border border-border/30 bg-muted/20">
-      <iframe
-        width="100%"
-        height="100%"
-        frameBorder="0"
-        scrolling="no"
-        marginHeight={0}
-        marginWidth={0}
-        src={mapUrl}
-        className="absolute inset-0"
-      />
-      <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm px-4 py-2 rounded-xl border border-border/50 shadow-lg">
-        <div className="flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-primary" />
-          <span className="font-semibold text-sm">Imported from {location.name}</span>
-        </div>
-      </div>
+    <div className="relative w-full h-full">
+      <LeafletMap countryCode={countryCode} />
     </div>
   );
 }
@@ -682,7 +663,7 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
                         <Globe className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                         <span className="text-xs font-medium">Origin: {vinInfo.details.registrationCountry}</span>
                       </div>
-                      <div className="h-32 rounded overflow-hidden border border-border/30">
+                      <div className="h-64 rounded overflow-hidden border border-border/30">
                         <ImportMap countryCode={vinInfo.details.registrationCountry} />
                       </div>
                     </div>
