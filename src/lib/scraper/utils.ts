@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { load, Cheerio, CheerioAPI, Element } from "cheerio";
+import { load, Cheerio, CheerioAPI } from "cheerio";
 import type { ScrapeOptions } from "./types";
 
 const DEFAULT_HEADERS: HeadersInit = {
@@ -84,14 +84,14 @@ export async function fetchHtml(
 }
 
 export interface SelectorHelpers {
-  text: (key: string, context?: Cheerio<Element>) => string | null;
-  texts: (key: string, context?: Cheerio<Element>) => string[];
+  text: (key: string, context?: Cheerio<any>) => string | null;
+  texts: (key: string, context?: Cheerio<any>) => string[];
   attr: (
     key: string,
     attrName: string,
-    context?: Cheerio<Element>,
+    context?: Cheerio<any>,
   ) => string | null;
-  nodes: (key: string, context?: Cheerio<Element>) => Cheerio<Element>;
+  nodes: (key: string, context?: Cheerio<any>) => Cheerio<any>;
 }
 
 export type SelectorMap = Record<string, string | string[]>;
@@ -108,7 +108,7 @@ export function createSelectorHelpers(
     return Array.isArray(selector) ? selector : [selector];
   };
 
-  const nodesFor = (key: string, context?: Cheerio<Element>) => {
+  const nodesFor = (key: string, context?: Cheerio<any>) => {
     const selectors = resolve(key);
     const base = context ?? $.root();
     const elements = selectors.flatMap((selector) =>
@@ -207,7 +207,7 @@ export function parseInteger(
 
 export function uniqueStrings(values: (string | null | undefined)[]): string[] {
   return Array.from(
-    new Set(values.filter((value): value is string => !!value && value.length)),
+    new Set(values.filter((value): value is string => !!value && value.length > 0)),
   );
 }
 
