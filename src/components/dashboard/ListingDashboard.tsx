@@ -153,29 +153,9 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const getAIResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
-    
-    if (lowerMessage.includes("price") || lowerMessage.includes("fair") || lowerMessage.includes("cost")) {
-      return `The price of ${formatPrice(listing.price, listing.currency)} for a ${listing.year} ${listing.brand} ${listing.model} sits in the reasonable range. Similar models typically range from €11,000-€14,000. Consider negotiating if inspection reveals any issues.`;
-    }
-    
-    if (lowerMessage.includes("issue") || lowerMessage.includes("problem") || lowerMessage.includes("common")) {
-      return `Common issues with the ${listing.year} ${listing.brand} ${listing.model}:\n\nEngine-related:\n• DPF (Diesel Particulate Filter) clogging, especially with city driving\n• EGR valve issues causing reduced performance\n• Timing belt replacement critical around 120,000-150,000 km\n\nMaintenance:\n• Service intervals are important - verify all scheduled maintenance was done\n• Parts are readily available but can be expensive for genuine parts\n\nGiven the mileage, I'd strongly recommend a pre-purchase inspection by a qualified mechanic.`;
-    }
-    
-    if (lowerMessage.includes("know") || lowerMessage.includes("before") || lowerMessage.includes("buy")) {
-      return `Based on the listing details, here's what you should know about this ${listing.year} ${listing.brand} ${listing.model}:\n\nPros:\n• Well-maintained with service history\n• Popular model with good parts availability\n• Diesel engine offers good fuel economy\n• Highline trim includes premium features\n• First owner, which is a positive sign\n\nThings to check:\n• At ${listing.mileageKm || listing.mileage} km, verify timing belt replacement (typically due around 120,000-150,000 km)\n• Check for any diesel particulate filter (DPF) issues\n• Verify all service records\n• Have a mechanic inspect the vehicle.`;
-    }
-    
-    if (lowerMessage.includes("maintenance") || lowerMessage.includes("service") || lowerMessage.includes("repair")) {
-      return `Maintenance considerations for this ${listing.year} ${listing.brand} ${listing.model}:\n\nImmediate checks:\n• Timing belt replacement due around 120,000-150,000 km\n• DPF system health check\n• EGR valve inspection\n\nOngoing costs:\n• Service: €200-€400 per year\n• Parts: Readily available, moderate pricing\n• Timing belt replacement: €400-€600\n\nRecommendation:\nVerify all service records and factor in potential maintenance costs when negotiating the price.`;
-    }
-    
-    return "I can help you with questions about this car's price, common issues, maintenance, or what to check before buying. Feel free to ask!";
-  };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim() || isTyping) return;
     
@@ -186,21 +166,57 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
       timestamp: new Date().toISOString(),
     };
     
-    setMessages([...messages, newMessage]);
+    setMessages((prev) => [...prev, newMessage]);
     const userInput = chatInput;
     setChatInput("");
     setIsTyping(true);
     
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          message: userInput, 
+          listing,
+          history: messages 
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Server error details:", errorData);
+        throw new Error(errorData.details || 'Failed to get response');
+      }
+
+      const data = await response.json();
+      
       const aiResponse: ChatMessage = {
         id: `msg-${Date.now()}`,
         role: "assistant",
-        content: getAIResponse(userInput),
+        content: data.response,
         timestamp: new Date().toISOString(),
         isTyping: true,
       };
       setMessages((prev) => [...prev, aiResponse]);
-    }, 500);
+    } catch (error) {
+      console.error('Chat error:', error);
+      const errorResponse: ChatMessage = {
+        id: `msg-${Date.now()}`,
+        role: "assistant",
+        content: "I'm sorry, I'm having trouble connecting right now. Please try again later.",
+        timestamp: new Date().toISOString(),
+        isTyping: true,
+      };
+      setMessages((prev) => [...prev, errorResponse]);
+    } finally {
+      // We don't set isTyping to false here because the TypingMessage component handles it
+      // when it finishes typing. However, if there was an error, we should probably clear it
+      // or let the error message type out.
+      // The TypingMessage component calls onComplete which sets isTyping to false.
+      // So we just need to make sure the message we added has isTyping: true.
+      // But if we error, we might want to ensure we don't get stuck.
+      // Actually, the error message also has isTyping: true, so it will type out and then clear the flag.
+    }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
