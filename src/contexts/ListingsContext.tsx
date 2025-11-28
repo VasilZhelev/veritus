@@ -47,11 +47,11 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
   }, [listings, isLoaded]);
 
   const addListing = (listingData: Omit<CarListing, "id" | "createdAt">) => {
-    const newListing: CarListing = {
+    const newListing = {
       ...listingData,
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
-    };
+    } as CarListing;
     setListings((prev) => [newListing, ...prev]);
   };
 
