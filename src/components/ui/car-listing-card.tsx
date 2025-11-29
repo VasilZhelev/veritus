@@ -47,6 +47,8 @@ interface CarListingCardProps {
   listing: CarListing;
   onDelete?: (id: string) => void;
   onToggleLike?: (id: string) => void;
+  onToggleCompare?: (id: string) => void;
+  isSelectedForCompare?: boolean;
   className?: string;
 }
 
@@ -54,6 +56,8 @@ export function CarListingCard({
   listing,
   onDelete,
   onToggleLike,
+  onToggleCompare,
+  isSelectedForCompare,
   className,
 }: CarListingCardProps) {
   const formatPrice = (price?: number, currency?: string) => {
@@ -145,6 +149,35 @@ export function CarListingCard({
         >
           <Heart className={cn("h-5 w-5", listing.likedAt && "fill-current")} />
         </Button>
+
+        {/* Compare Selection */}
+        {onToggleCompare && (
+          <div 
+            className="absolute top-3 left-3 z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div 
+              className={cn(
+                "flex items-center gap-2 px-2 py-1.5 rounded-md text-xs font-medium cursor-pointer transition-all duration-200 shadow-md",
+                isSelectedForCompare 
+                  ? "bg-blue-600 text-white hover:bg-blue-700" 
+                  : "bg-white/90 text-zinc-600 hover:bg-white hover:text-blue-600 backdrop-blur-sm"
+              )}
+              onClick={(e) => {
+                e.preventDefault();
+                onToggleCompare(listing.id);
+              }}
+            >
+              <div className={cn(
+                "w-4 h-4 rounded border flex items-center justify-center transition-colors",
+                isSelectedForCompare ? "border-white bg-blue-600" : "border-zinc-400 bg-transparent"
+              )}>
+                {isSelectedForCompare && <span className="text-[10px]">✓</span>}
+              </div>
+              Compare
+            </div>
+          </div>
+        )}
       </div>
 
       <CardHeader className="pb-3">

@@ -34,6 +34,10 @@ interface ListingsContextType {
   loadSavedListings: () => Promise<void>;
   getSavedListingWithChat: (listingId: string) => SavedListing | undefined;
   toggleLike: (listingId: string) => Promise<void>;
+  compareSelection: string[];
+  toggleCompare: (listingId: string) => void;
+  clearCompare: () => void;
+  isInCompare: (listingId: string) => boolean;
 }
 
 const ListingsContext = createContext<ListingsContextType | undefined>(
@@ -46,6 +50,7 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [listings, setListings] = useState<CarListing[]>([]);
   const [savedListings, setSavedListings] = useState<SavedListing[]>([]);
+  const [compareSelection, setCompareSelection] = useState<string[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage on mount (for non-authenticated users)
@@ -230,6 +235,28 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     return savedListings.find((s) => s.id === listingId);
   };
 
+  const toggleCompare = (listingId: string) => {
+    setCompareSelection((prev) => {
+      if (prev.includes(listingId)) {
+        return prev.filter((id) => id !== listingId);
+      }
+      if (prev.length >= 2) {
+        // If already 2 selected, remove the first one and add the new one (FIFO)
+        // Or we could just block. Let's do FIFO for smoother UX.
+        return [...prev.slice(1), listingId];
+      }
+      return [...prev, listingId];
+    });
+  };
+
+  const clearCompare = () => {
+    setCompareSelection([]);
+  };
+
+  const isInCompare = (listingId: string) => {
+    return compareSelection.includes(listingId);
+  };
+
   const toggleLike = async (listingId: string) => {
     if (!user) {
       // For guest users, we could implement local liking, but for now let's require auth
@@ -287,6 +314,10 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
         loadSavedListings,
         getSavedListingWithChat,
         toggleLike,
+        compareSelection,
+        toggleCompare,
+        clearCompare,
+        isInCompare,
       }}
     >
       {children}

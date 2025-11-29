@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/car-listing-card";
 import { ListingDashboard } from "@/components/dashboard/ListingDashboard";
 import { useListings } from "@/contexts/ListingsContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { ProtectedRoute } from "@/components/protected-route";
 
 // Helper function to transform scraped data into a CarListing object for the dashboard
 const transformScrapedData = (data: any): CarListing => {
@@ -51,6 +53,7 @@ function ScrapePageContent() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   const { addListing } = useListings();
   const savedUrlRef = useRef<string | null>(null); // Track if we've already saved this URL
@@ -105,7 +108,7 @@ function ScrapePageContent() {
   if (!url) {
     return (
       <div className="container mx-auto p-4 text-center">
-        <p>No URL provided. Please go back and enter a URL to scrape.</p>
+        <p>{t('scrape.noUrl')}</p>
       </div>
     );
   }
@@ -122,7 +125,7 @@ function ScrapePageContent() {
     return (
       <div className="container mx-auto p-4">
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-          <strong className="font-bold">Error:</strong>
+          <strong className="font-bold">{t('scrape.error')}</strong>
           <span className="block sm:inline"> {error}</span>
         </div>
       </div>

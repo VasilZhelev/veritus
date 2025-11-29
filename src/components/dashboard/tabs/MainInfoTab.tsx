@@ -7,7 +7,8 @@ import {
   Gauge, 
   Fuel, 
   Settings, 
-  ExternalLink
+  ExternalLink,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -201,22 +202,6 @@ export default function MainInfoTab({ listing }: MainInfoTabProps) {
           </div>
         </div>
       )}
-
-
-      {/* External Link */}
-      <div className="bg-muted/30 border-r border-border/50 p-8 lg:p-12 flex justify-center">
-        <Button
-          variant="outline"
-          size="lg"
-          className="px-8 border-2"
-          asChild
-        >
-          <a href={listing.url} target="_blank" rel="noopener noreferrer">
-            View Original Listing
-            <ExternalLink className="h-4 w-4 ml-2" />
-          </a>
-        </Button>
-      </div>
 
       {/* Full-screen Gallery Modal */}
       {isGalleryOpen && (

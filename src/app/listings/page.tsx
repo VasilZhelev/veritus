@@ -15,7 +15,7 @@ import { LogIn, Cloud } from "lucide-react";
 import { DeleteConfirmDialog } from "@/components/ui/delete-confirm-dialog";
 
 export default function ListingsPage() {
-  const { listings, removeListing, clearListings, toggleLike } = useListings();
+  const { listings, removeListing, clearListings, toggleLike, compareSelection, toggleCompare, isInCompare, clearCompare } = useListings();
   const { t } = useLanguage();
   const { user } = useAuth();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
@@ -41,7 +41,7 @@ export default function ListingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-24">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12">
@@ -156,11 +156,61 @@ export default function ListingsPage() {
                 listing={listing}
                 onDelete={() => handleDeleteClick(listing.id, `${listing.brand} ${listing.model}`)}
                 onToggleLike={() => toggleLike(listing.id)}
+                onToggleCompare={toggleCompare}
+                isSelectedForCompare={isInCompare(listing.id)}
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* Compare Floating Action Bar */}
+      {compareSelection.length > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-10 fade-in duration-300">
+          <div className="bg-foreground text-background rounded-full shadow-2xl px-6 py-3 flex items-center gap-6 border border-border/20">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary text-primary-foreground w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+                {compareSelection.length}
+              </div>
+              <span className="font-medium text-sm sm:text-base">
+                {compareSelection.length === 1 ? "Car selected" : "Cars selected"}
+              </span>
+            </div>
+            
+            <div className="h-6 w-px bg-background/20" />
+            
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={clearCompare}
+                className="text-background/70 hover:text-background hover:bg-background/10 h-8 px-3 rounded-full"
+              >
+                Clear
+              </Button>
+              <Button 
+                size="sm" 
+                disabled={compareSelection.length < 2}
+                asChild={compareSelection.length >= 2}
+                className={cn(
+                  "rounded-full px-4 h-8 transition-all",
+                  compareSelection.length >= 2 
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                    : "bg-muted/20 text-muted-foreground cursor-not-allowed"
+                )}
+              >
+                {compareSelection.length >= 2 ? (
+                  <Link href="/compare">
+                    Compare Now
+                  </Link>
+                ) : (
+                  <span>Select 2 to Compare</span>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

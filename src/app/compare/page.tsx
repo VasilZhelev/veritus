@@ -1,29 +1,32 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useEffect, useState, useRef } from "react";
+import { useListings } from "@/contexts/ListingsContext";
+import { CarListing } from "@/components/ui/car-listing-card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Check, X, MessageSquare, Send, Bot, User } from "lucide-react";
-import compareData from "@/lib/demo/compare-page-data.json";
-import chatHistory from "@/lib/demo/ai-compare-chat-history.json";
+import { Input } from "@/components/ui/input";
+import { 
+  ArrowLeft, 
+  Sparkles, 
+  Send, 
+  Check, 
+  X,
+  Calendar,
+  Fuel,
+  Gauge,
+  Settings,
+  MapPin
+} from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { ProtectedRoute } from "@/components/protected-route";
+import { ChatMessage } from "@/components/dashboard/ListingDashboard";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: string;
-  isTyping?: boolean;
-}
-
-// Typing animation component
+// Typing animation component (reused)
 function TypingMessage({ content, onComplete }: { content: string; onComplete: () => void }) {
   const [displayedText, setDisplayedText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -34,7 +37,7 @@ function TypingMessage({ content, onComplete }: { content: string; onComplete: (
       const timeout = setTimeout(() => {
         setDisplayedText(content.slice(0, currentIndex + 1));
         setCurrentIndex(currentIndex + 1);
-      }, 12);
+      }, 8); // Slightly faster for comparison
       return () => clearTimeout(timeout);
     } else if (!completedRef.current) {
       completedRef.current = true;
@@ -43,10 +46,8 @@ function TypingMessage({ content, onComplete }: { content: string; onComplete: (
   }, [currentIndex, content, onComplete]);
 
   return (
-    <div className="markdown-content prose dark:prose-invert max-w-none text-sm">
-      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-        {displayedText}
-      </ReactMarkdown>
+    <div className="text-[15px] leading-relaxed whitespace-pre-wrap">
+      {displayedText}
       {currentIndex < content.length && (
         <span className="inline-block w-[2px] h-4 bg-current ml-0.5 animate-pulse" />
       )}
@@ -54,36 +55,82 @@ function TypingMessage({ content, onComplete }: { content: string; onComplete: (
   );
 }
 
-const suggestionQuestions = [
-  "Which car is better for daily commuting?",
-  "What are the main differences?",
-  "Which one has lower maintenance costs?",
-  "Which car is more fuel efficient?",
-];
-
 export default function ComparePage() {
-  // In a real app, these would be managed by global state or URL params
-  const [selectedIds, setSelectedIds] = useState<string[]>(compareData.selectedIds);
+  const { listings, compareSelection } = useListings();
+  const [selectedListings, setSelectedListings] = useState<CarListing[]>([]);
+  const { t } = useLanguage();
+  
+  // Chat State
+  const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [usedSuggestions, setUsedSuggestions] = useState<Set<string>>(new Set());
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const selectedListings = compareData.listings.filter(l => selectedIds.includes(l.id));
-
-  // Helper to get value for a specific listing
-const getValue = (listing: any, key: string) => listing[key];
+  useEffect(() => {
+    // Filter listings based on selection
+    const selected = listings.filter(l => compareSelection.includes(l.id));
+    setSelectedListings(selected);
+  }, [listings, compareSelection]);
 
   useEffect(() => {
-    // Scroll the chat container to the bottom
-    if (chatEndRef.current) {
-      const scrollContainer = chatEndRef.current.parentElement;
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
+    if (messages.length > 0) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim() || isTyping) return;
+    
+    const newMessage: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      role: "user",
+      content: chatInput,
+      timestamp: new Date().toISOString(),
+    };
+    
+    setMessages((prev) => [...prev, newMessage]);
+    const userInput = chatInput;
+    setChatInput("");
+    setIsTyping(true);
+    
+    try {
+      const response = await fetch('/api/compare-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          message: userInput, 
+          listings: selectedListings,
+          history: messages 
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get response');
+      }
+
+      const data = await response.json();
+      
+      const aiResponse: ChatMessage = {
+        id: `msg-${Date.now()}`,
+        role: "assistant",
+        content: data.response,
+        timestamp: new Date().toISOString(),
+        isTyping: true,
+      };
+      setMessages((prev) => [...prev, aiResponse]);
+    } catch (error) {
+      console.error('Chat error:', error);
+      const errorResponse: ChatMessage = {
+        id: `msg-${Date.now()}`,
+        role: "assistant",
+        content: t('dashboard.chatError'),
+        timestamp: new Date().toISOString(),
+        isTyping: true,
+      };
+      setMessages((prev) => [...prev, errorResponse]);
+    }
+  };
 
   const handleTypingComplete = (messageId: string) => {
     setMessages((prev) =>
@@ -94,272 +141,210 @@ const getValue = (listing: any, key: string) => listing[key];
     setIsTyping(false);
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    setInput(suggestion);
-    setUsedSuggestions(prev => new Set(prev).add(suggestion));
+  if (selectedListings.length < 2) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+        <h1 className="text-2xl font-bold mb-4">{t('compare.selectTwo')}</h1>
+        <Button asChild>
+          <Link href="/listings">{t('compare.goToListings')}</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const [car1, car2] = selectedListings;
+
+  const formatPrice = (price?: number, currency?: string) => {
+    if (!price) return "N/A";
+    return new Intl.NumberFormat("bg-BG", { style: "currency", currency: currency || "EUR" }).format(price);
   };
 
-  const getAIResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase();
-    
-    // Main comparison overview
-    if (lowerMessage.includes("difference") || lowerMessage.includes("compare")) {
-      return "**Quick snapshot:**\n\n|                     | Mercedes E220 (2006) | Škoda Fabia (2009) |\n|---------------------|----------------------|--------------------|\n| Price               | €2,965 (5,800 BGN)   | €3,502 (6,850 BGN) |\n| Mileage             | 255,323 km           | 204,800 km         |\n| Engine              | 2.2 CDI · 150 hp     | 1.9 TDI · 105 hp   |\n| Transmission        | Automatic            | Manual             |\n| Fuel economy (WLTP) | ~7.2 l/100 km        | ~5.2 l/100 km      |\n| Body type           | Executive sedan      | Compact hatchback  |\n\nThink of the Mercedes as a comfortable highway cruiser with huge interior space and classic W211 ride quality. The Fabia is the practical city warrior—cheaper to run, easier to park, and still robust thanks to the proven 1.9 TDI block.";
-    }
-    
-    // Maintenance costs
-    if (lowerMessage.includes("maintenance") || lowerMessage.includes("cost")) {
-      return "**Running-cost perspective:**\n\n- **Mercedes E220**\n  - Annual servicing: €600–€900 (airmatic + transmission fluid every 60k)\n  - Insurance + tax: higher due to 2.2L engine and executive class\n  - Fuel: 7–8 l/100 km realistic mixed driving\n  - Watch list: SBC brake unit, suspension bushings, rust behind wheel arches\n\n- **Škoda Fabia**\n  - Annual servicing: €350–€500 (simple 1.9 TDI drivetrain)\n  - Insurance + tax: nearly half of the Mercedes\n  - Fuel: 5–5.5 l/100 km city/highway mix\n  - Watch list: EGR soot build-up, rear axle bushings, occasional injector seals\n\nIf total ownership cost is your top priority, the Fabia wins easily.";
-    }
-    
-    // Fuel efficiency
-    if (lowerMessage.includes("fuel") || lowerMessage.includes("efficient")) {
-      return "**Fuel efficiency comparison:**\n\n- **Škoda Fabia 1.9 TDI:** ~5.2 l/100 km (city/highway mix)\n  - Smaller, lighter engine\n  - Excellent for daily commuting\n  - Realistic range: ~800-900 km per tank\n\n- **Mercedes E220 CDI:** ~7.2 l/100 km (mixed driving)\n  - Larger executive sedan with more weight\n  - Still respectable for its class\n  - Realistic range: ~700-800 km per tank\n\nThe Fabia is the clear winner here, consuming about 30-35% less fuel than the Mercedes.";
-    }
-    
-    // Daily commuting
-    if (lowerMessage.includes("commut") || lowerMessage.includes("daily")) {
-      return "**Decision helper for daily commuting:**\n\n- Choose the **Mercedes** if you:\n  1. Drive longer highway stretches and want silence + cruise comfort\n  2. Don't mind spending extra on suspension and premium diesel\n  3. Appreciate classic executive styling and presence\n\n- Stick with the **Škoda** if you:\n  1. Spend most of your time in dense city traffic\n  2. Need predictable, low running costs and cheaper parts\n  3. Prefer a manual gearbox and easy parking\n\n**My neutral take:** Fabia is the sensible \"use every day, forget about it\" choice. The Mercedes becomes the right answer only if you specifically want rear-seat comfort or already budgeted for refurbishing an older executive sedan.";
-    }
-    
-    // Default response
-    return "I can help you compare these cars! Feel free to ask about:\n- Main differences and specifications\n- Maintenance and running costs\n- Fuel efficiency\n- Which is better for daily commuting";
-  };
-
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isTyping) return;
-
-    const newMessage: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      role: "user",
-      content: input,
-      timestamp: new Date().toISOString(),
-      isTyping: false,
-    };
-
-    setMessages([...messages, newMessage]);
-    const userInput = input;
-    setInput("");
-    setIsTyping(true);
-
-    // Mock AI response
-    setTimeout(() => {
-      const aiResponse: ChatMessage = {
-        id: `msg-ai-${Date.now()}`,
-        role: "assistant",
-        content: getAIResponse(userInput),
-        timestamp: new Date().toISOString(),
-        isTyping: true,
-      };
-      setMessages((prev) => [...prev, aiResponse]);
-    }, 500);
+  const formatMileage = (mileage?: number) => {
+    if (!mileage) return "N/A";
+    return `${new Intl.NumberFormat("bg-BG").format(mileage)} km`;
   };
 
   return (
-    <ProtectedRoute>
-      <div className="container mx-auto py-8 px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">Compare Listings</h1>
-          <p className="text-muted-foreground">
-            Analyze features, costs, and get AI assistance to choose the right car.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Comparison Table */}
-          <div className="lg:col-span-2 space-y-8">
-            <div className="grid grid-cols-2 gap-4">
-              {selectedListings.map(listing => (
-                <Card key={listing.id} className="overflow-hidden border-2 border-primary/5">
-                  <div className="aspect-video relative bg-muted overflow-hidden">
-                    <Image
-                      src={listing.id === 'mercedes-e220-2006' 
-                        ? 'https://mobistatic4.focus.bg/mobile/photosorg/478/1/big1/11760942424737478_wA.webp'
-                        : listing.id === 'skoda-fabia-2009'
-                        ? 'https://mobistatic3.focus.bg/mobile/photosorg/150/1/big1/11657564365550150_Y7.webp'
-                        : ''}
-                      alt={listing.title}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </div>
-                  <CardHeader className="p-4">
-                    <CardTitle className="text-lg line-clamp-1" title={listing.title}>
-                      {listing.title}
-                    </CardTitle>
-                    <CardDescription>{listing.subtitle}</CardDescription>
-                    <div className="mt-2 font-bold text-xl text-primary">
-                      €{listing.priceEuro.toLocaleString()}
-                    </div>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Specs Comparison</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y">
-                  {[
-                    { label: "Year", key: "year" },
-                    { label: "Mileage", key: "mileageKm", format: (v: number) => `${v.toLocaleString()} km` },
-                    { label: "Engine", key: "engine" },
-                    { label: "Transmission", key: "transmission" },
-                    { label: "Drive", key: "drive" },
-                    { label: "Consumption", key: "consumption" },
-                    { label: "Location", key: "location" },
-                  ].map((row) => (
-                    <div key={row.label} className="grid grid-cols-3 p-4 hover:bg-muted/50 transition-colors">
-                      <div className="font-medium text-muted-foreground flex items-center">{row.label}</div>
-                      {selectedListings.map(listing => (
-                        <div key={listing.id} className="font-medium">
-                          {row.format ? row.format(getValue(listing, row.key)) : getValue(listing, row.key)}
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {selectedListings.map(listing => (
-                <Card key={listing.id} className="h-full">
-                  <CardHeader>
-                    <CardTitle className="text-base">Pros & Cons: {listing.title.split(' ')[0]}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-semibold text-green-600 mb-2 flex items-center gap-1">
-                        <Check className="h-4 w-4" /> Pros
-                      </h4>
-                      <ul className="text-sm space-y-1">
-                        {listing.pros.map((pro: string, i: number) => (
-                          <li key={i} className="text-muted-foreground">• {pro}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    <Separator />
-                    <div>
-                      <h4 className="text-sm font-semibold text-red-600 mb-2 flex items-center gap-1">
-                        <X className="h-4 w-4" /> Cons
-                      </h4>
-                      <ul className="text-sm space-y-1">
-                        {listing.cons.map((con: string, i: number) => (
-                          <li key={i} className="text-muted-foreground">• {con}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          {/* AI Chat Assistant */}
-          <div className="lg:col-span-1">
-            <Card className="h-[calc(100vh-8rem)] flex flex-col sticky top-4 shadow-lg border-primary/10">
-              <CardHeader className="pb-3 border-b bg-muted/30">
-                <CardTitle className="flex items-center gap-2">
-                  <Bot className="h-5 w-5 text-primary" />
-                  Veritus AI Advisor
-                </CardTitle>
-                <CardDescription>
-                  Ask for help deciding between these cars.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 p-0 overflow-hidden relative">
-                <ScrollArea className="h-full p-4">
-                  <div className="space-y-4">
-                    {messages.map((msg) => (
-                      <div
-                        key={msg.id}
-                        className={cn(
-                          "flex gap-3 max-w-[90%]",
-                          msg.role === "user" ? "ml-auto flex-row-reverse" : ""
-                        )}
-                      >
-                        <div className={cn(
-                          "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
-                          msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
-                        )}>
-                          {msg.role === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
-                        </div>
-                        <div className={cn(
-                          "rounded-lg p-3 text-sm",
-                          msg.role === "user" 
-                            ? "bg-primary text-primary-foreground" 
-                            : "bg-muted text-foreground"
-                        )}>
-                          {msg.isTyping ? (
-                            <TypingMessage
-                              content={msg.content}
-                              onComplete={() => handleTypingComplete(msg.id)}
-                            />
-                          ) : (
-                            <div className="markdown-content prose dark:prose-invert max-w-none text-sm">
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {msg.content}
-                              </ReactMarkdown>
-                            </div>
-                          )}
-                          <div className={cn(
-                            "text-[10px] mt-1 opacity-70",
-                            msg.role === "user" ? "text-primary-foreground" : "text-muted-foreground"
-                          )}>
-                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    <div ref={chatEndRef} />
-                  </div>
-                </ScrollArea>
-              </CardContent>
-
-              {/* Suggestions */}
-              {suggestionQuestions.filter(s => !usedSuggestions.has(s)).length > 0 && (
-                <div className="px-4 pb-3">
-                  <div className="flex flex-wrap gap-2">
-                    {suggestionQuestions
-                      .filter(suggestion => !usedSuggestions.has(suggestion))
-                      .map((suggestion, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleSuggestionClick(suggestion)}
-                          className="text-xs px-3 py-2 rounded-full bg-muted/40 hover:bg-muted/60 border border-border/30 text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-[1.02] text-left"
-                        >
-                          {suggestion}
-                        </button>
-                      ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="p-3 border-t bg-background">
-                <form onSubmit={handleSendMessage} className="flex gap-2">
-                  <div className="relative flex-1">
-                    <input
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      placeholder="Ask a question..."
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                    />
-                  </div>
-                  <Button type="submit" size="icon" disabled={!input.trim()}>
-                    <Send className="h-4 w-4" />
-                    <span className="sr-only">Send</span>
-                  </Button>
-                </form>
-              </div>
-            </Card>
+    <div className="min-h-screen bg-background pb-12">
+      {/* Header */}
+      <div className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/listings">
+                <ArrowLeft className="h-5 w-5" />
+              </Link>
+            </Button>
+            <h1 className="text-xl font-bold">{t('compare.title')}</h1>
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+
+      <div className="container mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Comparison Table */}
+        <div className="lg:col-span-2 space-y-8">
+          <div className="grid grid-cols-2 gap-4 sm:gap-8">
+            {/* Car 1 Header */}
+            <div className="space-y-4">
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-muted">
+                {car1.image ? (
+                  <Image src={car1.image} alt={car1.title || "Car 1"} fill className="object-cover" />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">No Image</div>
+                )}
+              </div>
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold line-clamp-2 h-14">{car1.brand} {car1.model}</h2>
+                <Badge variant="secondary" className="text-lg px-3 py-1 mt-2">
+                  {formatPrice(car1.price, car1.currency)}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Car 2 Header */}
+            <div className="space-y-4">
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-muted">
+                {car2.image ? (
+                  <Image src={car2.image} alt={car2.title || "Car 2"} fill className="object-cover" />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">No Image</div>
+                )}
+              </div>
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold line-clamp-2 h-14">{car2.brand} {car2.model}</h2>
+                <Badge variant="secondary" className="text-lg px-3 py-1 mt-2">
+                  {formatPrice(car2.price, car2.currency)}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          {/* Specs Comparison */}
+          <Card>
+            <CardHeader className="pb-4 border-b">
+              <h3 className="font-semibold">{t('compare.specifications')}</h3>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y">
+                {[
+                  { icon: Calendar, label: t('compare.year'), val1: car1.year, val2: car2.year },
+                  { icon: Gauge, label: t('compare.mileage'), val1: formatMileage(car1.mileage), val2: formatMileage(car2.mileage) },
+                  { icon: Fuel, label: t('compare.fuel'), val1: car1.fuelType, val2: car2.fuelType },
+                  { icon: Settings, label: t('compare.transmission'), val1: car1.transmission, val2: car2.transmission },
+                  { icon: MapPin, label: t('compare.location'), val1: car1.location, val2: car2.location },
+                ].map((row, i) => (
+                  <div key={i} className="grid grid-cols-3 py-4 px-6 hover:bg-muted/50 transition-colors">
+                    <div className="col-span-3 sm:col-span-1 flex items-center gap-2 text-muted-foreground mb-2 sm:mb-0">
+                      <row.icon className="h-4 w-4" />
+                      <span className="text-sm font-medium">{row.label}</span>
+                    </div>
+                    <div className="font-medium">{row.val1 || "-"}</div>
+                    <div className="font-medium">{row.val2 || "-"}</div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* AI Chat Sidebar */}
+        <div className="lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)]">
+          <div className="bg-card border border-border rounded-xl shadow-lg h-full flex flex-col overflow-hidden relative">
+             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
+             
+             <div className="p-4 border-b bg-muted/30">
+               <div className="flex items-center gap-2 mb-1">
+                 <Sparkles className="h-5 w-5 text-purple-500" />
+                 <h3 className="font-bold">AI Comparison Assistant</h3>
+               </div>
+               <p className="text-xs text-muted-foreground">Ask me to help you choose between these two.</p>
+             </div>
+
+             <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {messages.length === 0 && (
+                  <div className="text-center py-10 px-4">
+                    <div className="bg-purple-100 dark:bg-purple-900/20 p-3 rounded-full w-fit mx-auto mb-3">
+                      <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <p className="text-sm font-medium mb-1">Not sure which one to pick?</p>
+                    <p className="text-xs text-muted-foreground">I can analyze the price, mileage, and specs to give you a recommendation.</p>
+                    
+                    <div className="mt-6 space-y-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full text-xs justify-start h-auto py-2 whitespace-normal text-left"
+                        onClick={() => {
+                           setChatInput("Which car is the better value for money?");
+                           // Ideally trigger send immediately, but for now just fill input
+                        }}
+                      >
+                        "Which car is better value?"
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full text-xs justify-start h-auto py-2 whitespace-normal text-left"
+                        onClick={() => setChatInput("Compare their maintenance costs.")}
+                      >
+                        "Compare maintenance costs"
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                
+                {messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={cn(
+                      "flex",
+                      message.role === "user" ? "justify-end" : "justify-start"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "max-w-[90%] px-3 py-2 rounded-2xl text-sm shadow-sm",
+                        message.role === "user"
+                          ? "bg-primary text-primary-foreground rounded-br-none"
+                          : "bg-muted border border-border rounded-bl-none"
+                      )}
+                    >
+                      {message.isTyping ? (
+                        <TypingMessage
+                          content={message.content}
+                          onComplete={() => handleTypingComplete(message.id)}
+                        />
+                      ) : (
+                        <div className="whitespace-pre-wrap">{message.content}</div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                <div ref={chatEndRef} />
+             </div>
+
+             <form onSubmit={handleSendMessage} className="p-3 border-t bg-muted/10">
+               <div className="flex gap-2">
+                 <Input
+                   value={chatInput}
+                   onChange={(e) => setChatInput(e.target.value)}
+                   placeholder="Ask for a recommendation..."
+                   className="flex-1 rounded-full text-sm"
+                   disabled={isTyping}
+                 />
+                 <Button
+                   type="submit"
+                   size="icon"
+                   className="shrink-0 rounded-full h-9 w-9"
+                   disabled={isTyping || !chatInput.trim()}
+                 >
+                   <Send className="h-4 w-4" />
+                 </Button>
+               </div>
+             </form>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
