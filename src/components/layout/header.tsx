@@ -25,10 +25,6 @@ export function Header() {
 			href: '/compare',
 		},
 		{
-			label: t('nav.vinCheck'),
-			href: '/vin-check',
-		},
-		{
 			label: t('nav.aboutUs'),
 			href: '/about',
 		},

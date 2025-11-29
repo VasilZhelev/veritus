@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { 
   Calendar, 
@@ -31,6 +31,30 @@ export default function MainInfoTab({ listing }: MainInfoTabProps) {
       : [];
 
   const listingMileage = listing.mileageKm || listing.mileage;
+
+  // Handle Escape key to close gallery
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isGalleryOpen) {
+        setIsGalleryOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isGalleryOpen]);
+
+  // Prevent body scroll when gallery is open
+  useEffect(() => {
+    if (isGalleryOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isGalleryOpen]);
 
   return (
     <div className="space-y-0">
@@ -142,6 +166,21 @@ export default function MainInfoTab({ listing }: MainInfoTabProps) {
         </div>
       </div>
 
+      {/* External Link Button */}
+      <div className="bg-white dark:bg-card border-r border-border/50 border-t border-border/30 p-8 lg:p-12 flex justify-center">
+        <Button
+          variant="outline"
+          size="lg"
+          className="px-8 border-2"
+          asChild
+        >
+          <a href={listing.url} target="_blank" rel="noopener noreferrer">
+            View Original Listing
+            <ExternalLink className="h-4 w-4 ml-2" />
+          </a>
+        </Button>
+      </div>
+
       {/* Features */}
       {listing.attributes?.["Особености"] && (
         <div className="bg-white dark:bg-card border-r border-border/50 p-8 lg:p-12 relative">
@@ -181,18 +220,28 @@ export default function MainInfoTab({ listing }: MainInfoTabProps) {
 
       {/* Full-screen Gallery Modal */}
       {isGalleryOpen && (
-        <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+          onClick={() => setIsGalleryOpen(false)}
+        >
           <button
-            onClick={() => setIsGalleryOpen(false)}
-            className="absolute top-4 right-4 text-white hover:text-white/70 text-4xl font-light w-12 h-12 flex items-center justify-center"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsGalleryOpen(false);
+            }}
+            className="absolute top-4 right-4 text-white hover:text-white/70 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors z-[110]"
+            aria-label="Close gallery"
           >
-            ×
+            <X className="w-8 h-8" />
           </button>
           
           {/* Previous Button */}
           {galleryImageIndex > 0 && (
             <button
-              onClick={() => setGalleryImageIndex(galleryImageIndex - 1)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setGalleryImageIndex(galleryImageIndex - 1);
+              }}
               className="absolute left-4 text-white hover:text-white/70 text-6xl font-light w-16 h-16 flex items-center justify-center"
             >
               ‹
@@ -200,7 +249,10 @@ export default function MainInfoTab({ listing }: MainInfoTabProps) {
           )}
           
           {/* Image */}
-          <div className="relative w-full h-full max-w-6xl max-h-[90vh] mx-16">
+          <div 
+            className="relative w-full h-full max-w-6xl max-h-[90vh] mx-16"
+            onClick={(e) => e.stopPropagation()}
+          >
             <Image
               src={listingImages[galleryImageIndex]}
               alt={`Gallery image ${galleryImageIndex + 1}`}
@@ -214,7 +266,10 @@ export default function MainInfoTab({ listing }: MainInfoTabProps) {
           {/* Next Button */}
           {galleryImageIndex < listingImages.length - 1 && (
             <button
-              onClick={() => setGalleryImageIndex(galleryImageIndex + 1)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setGalleryImageIndex(galleryImageIndex + 1);
+              }}
               className="absolute right-4 text-white hover:text-white/70 text-6xl font-light w-16 h-16 flex items-center justify-center"
             >
               ›
