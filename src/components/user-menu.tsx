@@ -15,12 +15,28 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { User, Settings, LogOut, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LoginDialog } from "./auth/LoginDialog";
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const [showLoginDialog, setShowLoginDialog] = React.useState(false);
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <>
+        <Button 
+          variant="outline" 
+          onClick={() => setShowLoginDialog(true)}
+          className="gap-2"
+        >
+          <User className="h-4 w-4" />
+          Sign In
+        </Button>
+        <LoginDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} />
+      </>
+    );
+  }
 
   const handleSignOut = async () => {
     await signOut();

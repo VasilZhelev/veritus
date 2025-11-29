@@ -1,12 +1,13 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   CarListing,
 } from "@/components/ui/car-listing-card";
 import { ListingDashboard } from "@/components/dashboard/ListingDashboard";
+import { useListings } from "@/contexts/ListingsContext";
 
 // Helper function to transform scraped data into a CarListing object for the dashboard
 const transformScrapedData = (data: any): CarListing => {
@@ -18,7 +19,7 @@ const transformScrapedData = (data: any): CarListing => {
   const [brand, model] = title ? title.split(/ (.*)/) : ["Unknown", ""];
 
   return {
-    id: normalizedListing.url || new Date().toISOString(),
+    id: crypto.randomUUID(), // Generate unique ID instead of using URL
     url: normalizedListing.url,
     image: normalizedListing.images && normalizedListing.images.length > 0 ? normalizedListing.images[0] : undefined,
     images: normalizedListing.images || [],
@@ -51,6 +52,9 @@ function ScrapePageContent() {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
+  const { addListing } = useListings();
+  const savedUrlRef = useRef<string | null>(null); // Track if we've already saved this URL
+
   useEffect(() => {
     if (url && user) {
       const scrape = async () => {
@@ -75,7 +79,18 @@ function ScrapePageContent() {
           const result = await response.json();
           console.log("Scrape result:", JSON.stringify(result, null, 2));
           setData(result);
-          setListing(transformScrapedData(result));
+          
+          const transformedListing = transformScrapedData(result);
+          setListing(transformedListing);
+
+          // Auto-save the listing only if we haven't saved this URL yet
+          if (savedUrlRef.current !== transformedListing.url) {
+            savedUrlRef.current = transformedListing.url;
+            await addListing(transformedListing);
+          } else {
+            console.log("Already saved this URL in this session, skipping");
+          }
+
         } catch (err: any) {
           setError(err.message);
         } finally {
@@ -85,7 +100,7 @@ function ScrapePageContent() {
 
       scrape();
     }
-  }, [url, user]);
+  }, [url, user, addListing]);
 
   if (!url) {
     return (

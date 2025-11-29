@@ -43,6 +43,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [migrationDone, setMigrationDone] = useState(false);
 
   // Listen to auth state changes and reload user to get latest verification status
   useEffect(() => {
@@ -51,14 +52,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Reload user to get latest email verification status
         await user.reload();
         setUser(auth.currentUser);
+
+        // Migrate localStorage listings when user signs in
+        if (!migrationDone) {
+          try {
+            const { migrateLocalStorageListings } = await import("@/lib/firestore-service");
+            const count = await migrateLocalStorageListings(user.uid);
+            if (count > 0) {
+              console.log(`Migrated ${count} listings from localStorage to Firestore`);
+            }
+            setMigrationDone(true);
+          } catch (error) {
+            console.error("Migration error:", error);
+          }
+        }
       } else {
         setUser(null);
+        setMigrationDone(false);
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [migrationDone]);
 
   // Auto-refresh ID token every 50 minutes (tokens expire after 1 hour)
   useEffect(() => {

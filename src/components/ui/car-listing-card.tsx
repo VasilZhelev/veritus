@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 
 import {
   Card,
@@ -19,6 +19,8 @@ import {
   Gauge,
   MapPin,
   Settings,
+  BookmarkCheck,
+  Heart,
 } from "lucide-react";
 
 export interface CarListing {
@@ -37,18 +39,21 @@ export interface CarListing {
   description?: string;
   createdAt: string;
   vin?: string;
+  savedAt?: string;
   [key: string]: any; // Allow other properties
 }
 
 interface CarListingCardProps {
   listing: CarListing;
   onDelete?: (id: string) => void;
+  onToggleLike?: (id: string) => void;
   className?: string;
 }
 
 export function CarListingCard({
   listing,
   onDelete,
+  onToggleLike,
   className,
 }: CarListingCardProps) {
   const formatPrice = (price?: number, currency?: string) => {
@@ -84,23 +89,25 @@ export function CarListingCard({
         className,
       )}
     >
-      <div className="relative w-full h-72 overflow-hidden bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900">
+      <div className="relative w-full h-48 overflow-hidden bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900">
         {listing.image ? (
-          <Image
-            src={listing.image}
-            alt={`${listing.brand} ${listing.model}`}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-110"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            priority
-          />
+          <Link href={`/listing/${listing.id}`} className="block w-full h-full">
+            <Image
+              src={listing.image}
+              alt={`${listing.brand} ${listing.model}`}
+              fill
+              className="object-cover transition-transform duration-300 group-hover:scale-110"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              priority
+            />
+          </Link>
         ) : (
-          <div className="flex items-center justify-center h-full">
+          <Link href={`/listing/${listing.id}`} className="flex items-center justify-center h-full w-full">
             <div className="text-center text-muted-foreground">
               <div className="text-6xl mb-2">🚗</div>
               <p className="text-sm">No image available</p>
             </div>
-          </div>
+          </Link>
         )}
         {onDelete && (
           <Button
@@ -112,12 +119,38 @@ export function CarListingCard({
             <Trash2 className="h-4 w-4" />
           </Button>
         )}
+        {/* Saved Indicator */}
+        {listing.savedAt && (
+           <div className="absolute top-3 left-3 bg-primary text-primary-foreground px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 shadow-md z-10">
+             <BookmarkCheck className="h-3 w-3" />
+             Saved
+           </div>
+        )}
+        
+        {/* Like Button */}
+        <Button
+          variant="secondary"
+          size="icon"
+          className={cn(
+            "absolute bottom-3 right-3 z-10 rounded-full shadow-md transition-all duration-300",
+            listing.likedAt 
+              ? "bg-red-500 text-white hover:bg-red-600 hover:text-white" 
+              : "bg-white/90 text-zinc-500 hover:bg-white hover:text-red-500"
+          )}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (onToggleLike) onToggleLike(listing.id);
+          }}
+        >
+          <Heart className={cn("h-5 w-5", listing.likedAt && "fill-current")} />
+        </Button>
       </div>
 
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <h3 className="text-2xl font-bold text-foreground mb-1">
+            <h3 className="text-xl font-bold text-foreground mb-1">
               {listing.brand} {listing.model}
             </h3>
             {listing.year && (
@@ -128,15 +161,15 @@ export function CarListingCard({
             )}
           </div>
           {listing.price && (
-            <Badge variant="secondary" className="text-lg font-semibold px-4 py-2">
+            <Badge variant="secondary" className="text-base font-semibold px-3 py-1">
               {formatPrice(listing.price, listing.currency)}
             </Badge>
           )}
         </div>
       </CardHeader>
 
-      <CardContent className="pt-0 pb-4">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-3 mb-6">
+      <CardContent className="pt-0 pb-3">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
           {listing.mileage && (
             <div className="flex items-center gap-2 text-sm">
               <Gauge className="h-4 w-4 text-muted-foreground" />
@@ -162,46 +195,12 @@ export function CarListingCard({
             </div>
           )}
         </div>
-        
-        {listing.description && (
-          <div className="mb-6">
-            <h4 className="font-semibold text-md mb-2">Описание</h4>
-            <p className="text-sm text-muted-foreground">
-              {listing.description}
-            </p>
-          </div>
-        )}
-
-        {otherAttributes.length > 0 && (
-          <div className="mb-6">
-            <h4 className="font-semibold text-md mb-3">Основни Характеристики</h4>
-            <div className="text-sm text-muted-foreground space-y-2">
-              {otherAttributes.map(([key, value]) => (
-                <div key={key} className="flex justify-between border-b border-dashed pb-1">
-                  <span className="font-medium text-foreground">{key}:</span>
-                  <span>{String(value)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {features && features.length > 0 && (
-           <div className="mb-6">
-            <h4 className="font-semibold text-md mb-3">Особености</h4>
-            <div className="columns-2 sm:columns-3 text-sm text-muted-foreground">
-              {features.map((feature: string) => (
-                <div key={feature} className="mb-1">{feature}</div>
-              ))}
-            </div>
-          </div>
-        )}
       </CardContent>
 
       <CardFooter className="pt-4">
         <Button variant="outline" className="w-full group/btn" asChild>
           <Link
-            href="/listing/demo"
+            href={`/listing/${listing.id}`}
             className="flex items-center justify-center gap-2"
           >
             View Details

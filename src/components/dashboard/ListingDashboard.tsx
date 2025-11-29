@@ -13,6 +13,9 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { CarListing } from "@/components/ui/car-listing-card";
 import { ListingHeader } from "./ListingHeader";
+import { SaveListingButton } from "./SaveListingButton";
+import { useListings } from "@/contexts/ListingsContext";
+import { useAuth } from "@/contexts/AuthContext";
 import dynamic from "next/dynamic";
 
 // Lazy load tab components for optimization
@@ -26,7 +29,7 @@ const VinCheckupTab = dynamic(() => import("./tabs/VinCheckupTab"), {
   loading: () => <div className="h-96 flex items-center justify-center"><div className="animate-spin h-8 w-8 border-green-500 border-t-transparent rounded-full" /></div>
 });
 
-interface ChatMessage {
+export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
@@ -78,6 +81,8 @@ interface ListingDashboardProps {
 type TabType = "main" | "damage" | "vin";
 
 export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashboardProps) {
+  const { user } = useAuth();
+  const { getSavedListingWithChat, toggleLike } = useListings();
   const [activeTab, setActiveTab] = useState<TabType>("main");
   
   // Chat State (Persistent across tabs)
@@ -87,8 +92,26 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
   const [usedSuggestions, setUsedSuggestions] = useState<Set<string>>(new Set());
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  // Load saved chat history on mount
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (user) {
+      const savedListing = getSavedListingWithChat(listing.id);
+      if (savedListing && savedListing.chatHistory.length > 0) {
+        setMessages(savedListing.chatHistory);
+      }
+    }
+  }, [user, listing.id]);
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Only scroll chat when new messages are added
+  useEffect(() => {
+    if (messages.length > 0) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -162,9 +185,22 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
   return (
     <div className="min-h-screen bg-background">
       {/* Common Header */}
-      <ListingHeader listing={listing} />
+      <ListingHeader 
+        listing={listing} 
+        onToggleLike={() => toggleLike(listing.id)}
+        isLiked={!!listing.likedAt}
+      />
+      
+      {/* Save Listing Button - Fixed position */}
+      <div className="fixed bottom-8 right-8 z-50">
+        <SaveListingButton 
+          listing={listing} 
+          chatHistory={messages}
+          metadata={{ vinInfo: propVinInfo }}
+        />
+      </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl -mt-8 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl -mt-8 relative z-10 mb-16">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
           {/* Main Content Area */}
           <div className="flex flex-col gap-6">

@@ -1,16 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { MapPin, Calendar } from "lucide-react";
+import { MapPin, Calendar, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CarListing } from "@/components/ui/car-listing-card";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface ListingHeaderProps {
   listing: CarListing;
+  onToggleLike?: () => void;
+  isLiked?: boolean;
 }
 
-export function ListingHeader({ listing }: ListingHeaderProps) {
+export function ListingHeader({ listing, onToggleLike, isLiked }: ListingHeaderProps) {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   
   // Use the first image or a fallback
@@ -34,7 +37,7 @@ export function ListingHeader({ listing }: ListingHeaderProps) {
             alt={listing.title || "Car background"}
             fill
             className={cn(
-              "object-cover transition-opacity duration-700 blur-sm scale-105",
+              "object-cover transition-opacity duration-700 blur-[2px] scale-105",
               isImageLoaded ? "opacity-100" : "opacity-0"
             )}
             onLoad={() => setIsImageLoaded(true)}
@@ -67,7 +70,7 @@ export function ListingHeader({ listing }: ListingHeaderProps) {
               </div>
             </div>
 
-            <div className="flex flex-col items-end">
+            <div className="flex flex-col items-end gap-4">
               <div className="text-4xl lg:text-5xl font-bold text-white drop-shadow-lg">
                 {formatPrice(listing.price, listing.currency)}
               </div>
@@ -75,6 +78,26 @@ export function ListingHeader({ listing }: ListingHeaderProps) {
                 <div className="text-sm text-white/70 font-medium mt-1">
                   ≈ {formatPrice(listing.priceLeva, "BGN")}
                 </div>
+              )}
+              
+              {onToggleLike && (
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className={cn(
+                    "rounded-full shadow-lg transition-all duration-300 gap-2",
+                    isLiked 
+                      ? "bg-red-500 text-white hover:bg-red-600 hover:text-white border-none" 
+                      : "bg-white/10 backdrop-blur-md text-white hover:bg-white hover:text-red-500 border border-white/20"
+                  )}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (onToggleLike) onToggleLike();
+                  }}
+                >
+                  <Heart className={cn("h-5 w-5", isLiked && "fill-current")} />
+                  {isLiked ? "Liked" : "Like"}
+                </Button>
               )}
             </div>
           </div>

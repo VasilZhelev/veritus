@@ -7,10 +7,7 @@ import {
   Gauge, 
   Fuel, 
   Settings, 
-  ExternalLink,
-  Shield,
-  TrendingUp,
-  Clock
+  ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -166,30 +163,6 @@ export default function MainInfoTab({ listing }: MainInfoTabProps) {
         </div>
       )}
 
-      {/* Quick Stats */}
-      <div className="bg-white dark:bg-card border-r border-border/50 p-8 lg:p-12 relative">
-        {/* Geometric accent elements */}
-        <div className="absolute bottom-0 left-0 w-16 h-16 border-l-2 border-b-2 border-primary/30" />
-        <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-blue-500/10 to-transparent" />
-        
-        <div className="grid grid-cols-3 gap-6">
-          <div className="text-center p-4 border border-border/30">
-            <Shield className="h-6 w-6 text-primary mx-auto mb-2" />
-            <div className="text-lg font-bold mb-1">First Owner</div>
-            <div className="text-xs text-muted-foreground">Single ownership</div>
-          </div>
-          <div className="text-center p-4 border border-border/30">
-            <TrendingUp className="h-6 w-6 text-primary mx-auto mb-2" />
-            <div className="text-lg font-bold mb-1">Well Maintained</div>
-            <div className="text-xs text-muted-foreground">Service history</div>
-          </div>
-          <div className="text-center p-4 border border-border/30">
-            <Clock className="h-6 w-6 text-primary mx-auto mb-2" />
-            <div className="text-lg font-bold mb-1">10 Years</div>
-            <div className="text-xs text-muted-foreground">Vehicle age</div>
-          </div>
-        </div>
-      </div>
 
       {/* External Link */}
       <div className="bg-muted/30 border-r border-border/50 p-8 lg:p-12 flex justify-center">
