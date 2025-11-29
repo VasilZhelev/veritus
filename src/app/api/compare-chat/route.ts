@@ -1,14 +1,16 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
   try {
     const { message, listings, history } = await req.json();
     const [car1, car2] = listings;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json({ error: "GEMINI_API_KEY is not set" }, { status: 500 });
+    }
+
+    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     const prompt = `
       You are an expert car consultant helping a user choose between two cars.
@@ -46,8 +48,12 @@ export async function POST(req: Request) {
     // Convert history to Gemini format if needed, but for now we just use the prompt with context
     // Ideally we should pass history to chat session, but single turn with context is often enough for simple comparison
     
-    const result = await model.generateContent(prompt);
-    const response = result.response.text();
+    const result = await ai.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: prompt,
+    });
+    
+    const response = result.text;
 
     return NextResponse.json({ response });
   } catch (error) {
