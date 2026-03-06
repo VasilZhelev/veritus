@@ -24,8 +24,7 @@ const FlagIcon = ({ country, size = 24 }: { country: "en" | "bg"; size?: number 
       alt={country === "en" ? "English" : "Bulgarian"}
       width={size}
       height={size}
-      className="rounded-full object-cover w-full h-full"
-      style={{ width: `${size}px`, height: `${size}px` }}
+      className="rounded-full object-cover"
     />
   );
 };

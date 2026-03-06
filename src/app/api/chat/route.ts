@@ -55,12 +55,63 @@ Do not make up facts about the car that are not in the listing.
     // }
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-lite-preview-02-05",
-      contents: prompt,
+      model: "gemini-2.5-flash-lite",
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: prompt }]
+        }
+      ],
+      config: {
+        maxOutputTokens: 2048,
+      }
     });
 
     return NextResponse.json({ response: response.text });
   } catch (error: any) {
+    // Check for 429 Rate Limit
+    let isRateLimit = error.status === 429;
+    let errorMessage = "AI chat service is busy. Please try again in a minute.";
+    let isNotFound = error.status === 404 || (error.message && error.message.includes('404'));
+    
+    // Detailed error parsing
+    if (error.message) {
+        if (error.message.includes('429')) isRateLimit = true;
+        try {
+            const jsonStart = error.message.indexOf('{');
+            if (jsonStart !== -1) {
+                const jsonPart = error.message.substring(jsonStart);
+                const parsed = JSON.parse(jsonPart);
+                if (parsed.error) {
+                    if (parsed.error.code === 429 || parsed.error.status === 'RESOURCE_EXHAUSTED') {
+                        isRateLimit = true;
+                        errorMessage = "Daily AI connection quota exceeded. Please try again later.";
+                    }
+                    if (parsed.error.code === 404) {
+                        isNotFound = true;
+                        errorMessage = "AI Model not found.";
+                    }
+                }
+            }
+        } catch (e) {}
+    }
+
+    if (isRateLimit) {
+        console.warn("Gemini API Rate Limit hit for chat");
+        return NextResponse.json({ 
+            error: errorMessage,
+            code: "RATE_LIMIT_EXCEEDED" 
+        }, { status: 429 });
+    }
+    
+    if (isNotFound) {
+        console.error("Gemini Model Not Found:", error.message);
+        return NextResponse.json({ 
+            error: "AI Model unavailable. Please contact support.",
+            code: "MODEL_NOT_FOUND" 
+        }, { status: 404 });
+    }
+
     console.error("Error generating AI response:", error);
     return NextResponse.json({ 
       error: "Failed to generate response", 

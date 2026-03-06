@@ -49,14 +49,56 @@ export async function POST(req: Request) {
     // Ideally we should pass history to chat session, but single turn with context is often enough for simple comparison
     
     const result = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash-lite",
       contents: prompt,
     });
     
     const response = result.text;
 
     return NextResponse.json({ response });
-  } catch (error) {
+  } catch (error: any) {
+    // Check for 429 Rate Limit
+    let isRateLimit = error.status === 429;
+    let errorMessage = "AI comparison service is busy. Please try again in a minute.";
+    let isNotFound = error.status === 404 || (error.message && error.message.includes('404'));
+    
+    if (error.message) {
+        if (error.message.includes('429')) isRateLimit = true;
+        try {
+            const jsonStart = error.message.indexOf('{');
+            if (jsonStart !== -1) {
+                const jsonPart = error.message.substring(jsonStart);
+                const parsed = JSON.parse(jsonPart);
+                if (parsed.error) {
+                    if (parsed.error.code === 429 || parsed.error.status === 'RESOURCE_EXHAUSTED') {
+                        isRateLimit = true;
+                        errorMessage = "Daily AI comparison quota exceeded. Please try again later.";
+                    }
+                    if (parsed.error.code === 404) {
+                        isNotFound = true;
+                        errorMessage = "AI Model not found.";
+                    }
+                }
+            }
+        } catch (e) {}
+    }
+
+    if (isRateLimit) {
+        console.warn("Gemini API Rate Limit hit for compare chat");
+        return NextResponse.json({ 
+            error: errorMessage,
+            code: "RATE_LIMIT_EXCEEDED"
+        }, { status: 429 });
+    }
+    
+    if (isNotFound) {
+        console.error("Gemini Model Not Found:", error.message);
+        return NextResponse.json({ 
+            error: "AI Model unavailable. Please contact support.",
+            code: "MODEL_NOT_FOUND" 
+        }, { status: 404 });
+    }
+
     console.error("Compare chat error:", error);
     return NextResponse.json(
       { error: "Failed to generate response" },

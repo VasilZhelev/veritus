@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       try {
         const response = await fetch(url);
         if (!response.ok) {
-          console.error(`Failed to fetch image: ${url}`);
+          console.error(`Failed to fetch image: ${url} - Status: ${response.status}`);
           return null;
         }
         const arrayBuffer = await response.arrayBuffer();
@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     const imageData = (await Promise.all(imageDataPromises)).filter(img => img !== null);
 
     if (imageData.length === 0) {
-      return NextResponse.json({ error: "Failed to process any images" }, { status: 500 });
+      return NextResponse.json({ error: "Failed to process any images. Please check if the image URLs are valid." }, { status: 422 });
     }
 
     // Construct the prompt for damage detection with structured JSON output
@@ -74,58 +74,107 @@ Provide your analysis in the following JSON format:
 
 Be specific and accurate. If no significant damage is visible, return an empty damages array and "none" severity.`;
 
-    // Create the request with text and images
-    const contents = [
-      {
-        role: "user",
-        parts: [
-          { text: prompt },
-          ...imageData
-        ]
-      }
-    ];
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash-lite-preview-02-05",
-      contents: contents,
-    });
-
-    const analysisText = response.text;
-
-    if (!analysisText) {
-      return NextResponse.json({ error: "No analysis text returned" }, { status: 500 });
-    }
-
-    // Try to parse JSON from the response
-    let structuredData;
     try {
-      // Extract JSON from potential markdown code blocks
-      const jsonMatch = analysisText.match(/```json\s*([\s\S]*?)\s*```/) || 
-                       analysisText.match(/\{[\s\S]*\}/);
-      
-      if (jsonMatch) {
-        const jsonText = jsonMatch[1] || jsonMatch[0];
-        structuredData = JSON.parse(jsonText);
-      } else {
-        // Fallback: try parsing the entire response
-        structuredData = JSON.parse(analysisText);
-      }
-    } catch (parseError) {
-      console.error("Failed to parse JSON response:", parseError);
-      // Fallback to basic structure
-      structuredData = {
-        overallCondition: "Unknown",
-        severityLevel: "unknown",
-        damages: [],
-        recommendations: [],
-        summary: analysisText
-      };
-    }
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash-lite",
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: prompt },
+              ...imageData
+            ]
+          }
+        ],
+      });
 
-    return NextResponse.json({ 
-      ...structuredData,
-      imagesAnalyzed: imageData.length
-    });
+      const analysisText = response.text;
+
+      if (!analysisText) {
+        return NextResponse.json({ error: "No analysis text returned" }, { status: 500 });
+      }
+
+      // Try to parse JSON from the response
+      let structuredData;
+      try {
+        // Extract JSON from potential markdown code blocks
+        const jsonMatch = analysisText.match(/```json\s*([\s\S]*?)\s*```/) || 
+                         analysisText.match(/\{[\s\S]*\}/);
+        
+        if (jsonMatch) {
+          const jsonText = jsonMatch[1] || jsonMatch[0];
+          structuredData = JSON.parse(jsonText);
+        } else {
+          // Fallback: try parsing the entire response
+          structuredData = JSON.parse(analysisText);
+        }
+      } catch (parseError) {
+        console.error("Failed to parse JSON response:", parseError);
+        // Fallback to basic structure
+        structuredData = {
+          overallCondition: "Unknown",
+          severityLevel: "unknown",
+          damages: [],
+          recommendations: [],
+          summary: analysisText
+        };
+      }
+
+      return NextResponse.json({ 
+        ...structuredData,
+        imagesAnalyzed: imageData.length
+      });
+
+    } catch (geminiError: any) {
+      // Check for 429 Rate Limit
+      let isRateLimit = geminiError.status === 429;
+      let errorMessage = "AI service is currently busy. Please try again in a minute.";
+      let isNotFound = geminiError.status === 404 || (geminiError.message && geminiError.message.includes('404'));
+
+      // Detailed error parsing for Gemini API
+      if (geminiError.message) {
+         if (geminiError.message.includes('429')) isRateLimit = true;
+         
+         try {
+             const jsonStart = geminiError.message.indexOf('{');
+             if (jsonStart !== -1) {
+                 const jsonPart = geminiError.message.substring(jsonStart);
+                 const parsed = JSON.parse(jsonPart);
+                 if (parsed.error) {
+                    if (parsed.error.code === 429 || parsed.error.status === 'RESOURCE_EXHAUSTED') {
+                        isRateLimit = true;
+                        errorMessage = "Usage limit exceeded for the AI model. Please try again later.";
+                    }
+                    if (parsed.error.code === 404) {
+                        isNotFound = true;
+                        errorMessage = "AI Model not found or unavailable. Please check configuration.";
+                    }
+                 }
+             }
+         } catch (e) {
+             // ignore parsing error
+         }
+      }
+
+      if (isRateLimit) {
+        console.warn("Gemini API Rate Limit hit for damage check"); 
+        return NextResponse.json({ 
+          error: errorMessage,
+          code: "RATE_LIMIT_EXCEEDED"
+        }, { status: 429 });
+      }
+      
+      if (isNotFound) {
+        console.error("Gemini Model Not Found:", geminiError.message);
+        return NextResponse.json({ 
+            error: "Selected AI model is not available. Please contact support.",
+            code: "MODEL_NOT_FOUND" 
+        }, { status: 404 });
+      }
+
+      console.error("Gemini API Error:", geminiError);
+      throw geminiError;
+    }
 
   } catch (error: any) {
     console.error("Error analyzing images for damage:", error);

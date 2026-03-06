@@ -142,6 +142,7 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
       });
 
       if (!response.ok) {
+        console.log(response);
         throw new Error('Failed to get response');
       }
 

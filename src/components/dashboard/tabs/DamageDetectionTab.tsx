@@ -33,6 +33,8 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
       ? [listing.image] 
       : [];
 
+  const [retryCount, setRetryCount] = useState(0);
+
   // Auto-fetch damage analysis if listing has images
   useEffect(() => {
     const fetchDamageAnalysis = async () => {
@@ -46,15 +48,20 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
             body: JSON.stringify({ imageUrls: listingImages }),
           });
           
+          const data = await response.json();
+
           if (response.ok) {
-            const data = await response.json();
             setDamageAnalysis(data);
           } else {
-            setDamageError('Failed to analyze images');
+            if (response.status === 429) {
+              setDamageError(data.error || 'AI service is busy. Please try again in a moment.');
+            } else {
+              setDamageError(data.error || 'Failed to analyze images');
+            }
           }
         } catch (error) {
           console.error('Failed to fetch damage analysis:', error);
-          setDamageError('Error analyzing images');
+          setDamageError('Error analyzing images. Please check your connection.');
         } finally {
           setIsDamageLoading(false);
         }
@@ -62,7 +69,11 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
     };
 
     fetchDamageAnalysis();
-  }, [listingImages.length, damageAnalysis, isDamageLoading]);
+  }, [listingImages.length, retryCount]); // Add retryCount dependency
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+  };
 
   return (
     <div className="bg-gradient-to-br from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20 border-r border-border/50 p-8 lg:p-12 relative overflow-hidden min-h-[500px]">
@@ -93,12 +104,20 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
 
         {/* Error State */}
         {damageError && !isDamageLoading && (
-          <div className="p-4 bg-red-50/80 dark:bg-red-950/20 backdrop-blur-sm border border-red-200 dark:border-red-800 rounded flex items-start gap-3">
-            <XCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-            <div>
-              <div className="font-semibold text-red-700 dark:text-red-400">Analysis Failed</div>
-              <div className="text-sm text-red-600 dark:text-red-500">{damageError}</div>
+          <div className="p-4 bg-red-50/80 dark:bg-red-950/20 backdrop-blur-sm border border-red-200 dark:border-red-800 rounded flex items-start gap-3 justify-between">
+            <div className="flex items-start gap-3">
+              <XCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="font-semibold text-red-700 dark:text-red-400">Analysis Failed</div>
+                <div className="text-sm text-red-600 dark:text-red-500">{damageError}</div>
+              </div>
             </div>
+            <button 
+              onClick={handleRetry}
+              className="px-3 py-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 text-xs font-medium rounded transition-colors"
+            >
+              Retry
+            </button>
           </div>
         )}
 
