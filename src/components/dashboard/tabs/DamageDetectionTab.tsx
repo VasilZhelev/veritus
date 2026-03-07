@@ -2,17 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { 
-  Wrench, 
-  XCircle, 
-  Activity, 
   CheckCircle2, 
   Info, 
   AlertTriangle, 
-  Zap, 
-  CircleDot, 
   MapPin, 
   Shield, 
-  AlertCircle 
+  AlertCircle,
+  Camera,
+  Search
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -75,257 +72,189 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
     setRetryCount(prev => prev + 1);
   };
 
+  const hasDamages = damageAnalysis && damageAnalysis.damages && damageAnalysis.damages.length > 0;
+
   return (
-    <div className="bg-gradient-to-br from-purple-50/50 to-indigo-50/50 dark:from-purple-950/20 dark:to-indigo-950/20 border-r border-border/50 p-8 lg:p-12 relative overflow-hidden min-h-[500px]">
-      {/* Decorative elements */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-500/10 to-transparent" />
-      <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-500/10 to-transparent" />
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 via-indigo-500 to-purple-600" />
+    <div className="bg-white dark:bg-card border-r border-border/50 p-8 lg:p-12 relative min-h-[500px]">
+      {/* Vertical accent bar */}
+      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 to-purple-700" />
       
-      <div className="relative">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2.5 bg-purple-500 text-white rounded-lg shadow-lg shadow-purple-500/20">
-            <Wrench className="h-5 w-5" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold">AI Damage Detection</h2>
-            <p className="text-xs text-muted-foreground">Analyzing first {Math.min(2, listingImages.length)} image(s) for visible damages</p>
-          </div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8 border-b border-border/40 pb-6">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-tight">AI Condition Assessment</h2>
+          <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
+            <Camera className="h-4 w-4" /> Analyzed {Math.min(2, listingImages.length)} interior/exterior image{listingImages.length > 1 ? 's' : ''}
+          </p>
         </div>
+      </div>
 
-        {/* Loading State */}
-        {isDamageLoading && (
-          <div className="p-6 bg-white/80 dark:bg-background/80 backdrop-blur-sm border border-border/50 rounded flex items-center gap-3">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-purple-500 border-t-transparent" />
-            <span className="text-sm text-muted-foreground">Analyzing images for damages...</span>
+      {isDamageLoading && (
+        <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-dashed border-border/60 bg-muted/20">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-500 border-t-transparent mb-4" />
+          <h3 className="font-medium">Scanning for issues</h3>
+          <p className="text-sm text-muted-foreground mt-1">Our AI is reviewing high-resolution details...</p>
+        </div>
+      )}
+
+      {damageError && !isDamageLoading && (
+        <div className="p-8 rounded-2xl border border-destructive/20 bg-destructive/5 flex flex-col items-center justify-center text-center">
+          <div className="h-14 w-14 rounded-full bg-destructive/10 flex items-center justify-center mb-4 ring-8 ring-destructive/5">
+            <AlertCircle className="h-7 w-7 text-destructive" />
           </div>
-        )}
+          <h3 className="text-lg font-semibold text-destructive mb-1">Analysis Unavailable</h3>
+          <p className="text-sm text-destructive/80 max-w-md mb-6">{damageError}</p>
+          <button 
+            onClick={handleRetry}
+            className="px-5 py-2.5 bg-background border border-border shadow-sm hover:shadow hover:bg-muted text-sm font-medium rounded-lg transition-all"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
 
-        {/* Error State */}
-        {damageError && !isDamageLoading && (
-          <div className="p-4 bg-red-50/80 dark:bg-red-950/20 backdrop-blur-sm border border-red-200 dark:border-red-800 rounded flex items-start gap-3 justify-between">
-            <div className="flex items-start gap-3">
-              <XCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <div className="font-semibold text-red-700 dark:text-red-400">Analysis Failed</div>
-                <div className="text-sm text-red-600 dark:text-red-500">{damageError}</div>
+      {damageAnalysis && !isDamageLoading && (
+        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          
+          {!hasDamages ? (
+            /* Pristine State / No Damages */
+            <div className="p-8 lg:p-12 rounded-2xl border border-purple-500/20 bg-purple-500/5 flex flex-col items-center justify-center text-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-purple-500/20" />
+              <div className="h-24 w-24 rounded-full bg-purple-500/10 flex items-center justify-center mb-6 ring-8 ring-purple-500/5">
+                <CheckCircle2 className="h-12 w-12 text-purple-600 dark:text-purple-400" />
               </div>
-            </div>
-            <button 
-              onClick={handleRetry}
-              className="px-3 py-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 text-xs font-medium rounded transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        )}
-
-        {/* Results */}
-        {damageAnalysis && !isDamageLoading && (
-          <div className="space-y-6">
-            {/* Top Stats Grid - Horizontal */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Overall Condition */}
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white shadow-lg">
-                <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-                <div className="relative">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Activity className="h-5 w-5" />
-                    <div className="text-xs uppercase tracking-wider opacity-90">Overall Condition</div>
-                  </div>
-                  <div className="text-3xl font-bold mb-1">{damageAnalysis.overallCondition}</div>
-                  <div className="text-xs opacity-75">{damageAnalysis.imagesAnalyzed} image{damageAnalysis.imagesAnalyzed > 1 ? 's' : ''} analyzed</div>
+              <h3 className="text-2xl font-semibold text-purple-900 dark:text-purple-100 mb-3">Pristine Condition</h3>
+              <p className="text-purple-700/80 dark:text-purple-300/80 max-w-lg text-sm leading-relaxed">
+                Our AI scanning detected no visible damages, scratches, or defects in the provided images. 
+                The exterior and interior appear to be in excellent condition.
+              </p>
+              
+              <div className="mt-8 grid grid-cols-2 gap-4 w-full max-w-sm">
+                <div className="p-4 rounded-xl bg-background/60 border border-purple-500/10 flex flex-col items-center">
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Overall</span>
+                  <span className="font-semibold text-purple-700 dark:text-purple-300">{damageAnalysis.overallCondition || "Excellent"}</span>
                 </div>
-              </div>
-
-              {/* Severity Level */}
-              <div className={cn(
-                "relative overflow-hidden rounded-xl p-6 text-white shadow-lg",
-                damageAnalysis.severityLevel === "none" && "bg-gradient-to-br from-green-500 to-emerald-600",
-                damageAnalysis.severityLevel === "minor" && "bg-gradient-to-br from-blue-500 to-cyan-600",
-                damageAnalysis.severityLevel === "moderate" && "bg-gradient-to-br from-orange-500 to-amber-600",
-                damageAnalysis.severityLevel === "severe" && "bg-gradient-to-br from-red-500 to-rose-600",
-                !damageAnalysis.severityLevel && "bg-gradient-to-br from-gray-500 to-slate-600"
-              )}>
-                <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-                <div className="relative">
-                  <div className="flex items-center gap-2 mb-2">
-                    {damageAnalysis.severityLevel === "none" && <CheckCircle2 className="h-5 w-5" />}
-                    {damageAnalysis.severityLevel === "minor" && <Info className="h-5 w-5" />}
-                    {damageAnalysis.severityLevel === "moderate" && <AlertTriangle className="h-5 w-5" />}
-                    {damageAnalysis.severityLevel === "severe" && <XCircle className="h-5 w-5" />}
-                    <div className="text-xs uppercase tracking-wider opacity-90">Severity Level</div>
-                  </div>
-                  <div className="text-3xl font-bold">
-                    {damageAnalysis.severityLevel ? damageAnalysis.severityLevel.charAt(0).toUpperCase() + damageAnalysis.severityLevel.slice(1) : "Unknown"}
-                  </div>
-                </div>
-              </div>
-
-              {/* Damage Count */}
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 p-6 text-white shadow-lg">
-                <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
-                <div className="relative">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Zap className="h-5 w-5" />
-                    <div className="text-xs uppercase tracking-wider opacity-90">Issues Detected</div>
-                  </div>
-                  <div className="text-3xl font-bold">{damageAnalysis.damages?.length || 0}</div>
-                  <div className="text-xs opacity-75">
-                    {damageAnalysis.damages?.length === 0 ? "No damages" : `Item${damageAnalysis.damages?.length > 1 ? 's' : ''} found`}
-                  </div>
+                <div className="p-4 rounded-xl bg-background/60 border border-purple-500/10 flex flex-col items-center">
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Severity</span>
+                  <span className="font-semibold text-purple-700 dark:text-purple-300">None</span>
                 </div>
               </div>
             </div>
-
-            {/* Summary Card */}
-            {damageAnalysis.summary && (
-              <div className="relative overflow-hidden rounded-xl bg-white dark:bg-card p-6 shadow-md border-l-4 border-indigo-500">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-full bg-indigo-100 dark:bg-indigo-950/30">
-                    <Info className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold mb-2">Assessment Summary</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{damageAnalysis.summary}</p>
-                  </div>
+          ) : (
+            /* Damages Found State */
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-semibold flex items-center gap-2 text-foreground">
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                    Detected Issues
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Found {damageAnalysis.damages.length} area{damageAnalysis.damages.length !== 1 ? 's' : ''} requiring attention
+                  </p>
+                </div>
+                
+                <div className="inline-flex self-start sm:self-auto rounded-lg bg-muted text-sm border flex-shrink-0">
+                  <div className="px-3 py-1.5 border-r border-border text-muted-foreground">Condition</div>
+                  <div className="px-3 py-1.5 font-medium">{damageAnalysis.overallCondition || "Fair"}</div>
                 </div>
               </div>
-            )}
 
-            {/* Damages Grid - Horizontal 2-Column */}
-            {damageAnalysis.damages && damageAnalysis.damages.length > 0 ? (
-              <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-500 text-white shadow-lg">
-                    <AlertTriangle className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold">Detected Damages</h3>
-                    <p className="text-xs text-muted-foreground">{damageAnalysis.damages.length} issue{damageAnalysis.damages.length > 1 ? 's' : ''} requiring attention</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {damageAnalysis.damages.map((damage: any, index: number) => {
-                    // Get damage type icon
-                    const getDamageIcon = (type: string) => {
-                      const t = type.toLowerCase();
-                      if (t.includes('scratch')) return <Zap className="h-5 w-5" />;
-                      if (t.includes('dent')) return <CircleDot className="h-5 w-5" />;
-                      if (t.includes('rust')) return <AlertTriangle className="h-5 w-5" />;
-                      return <Wrench className="h-5 w-5" />;
-                    };
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {damageAnalysis.damages.map((damage: any, index: number) => {
+                  const severityStyles: Record<string, string> = {
+                    minor: "border-blue-200 bg-blue-50/40 text-blue-900 dark:border-blue-900/40 dark:bg-blue-950/20 dark:text-blue-100",
+                    moderate: "border-amber-200 bg-amber-50/40 text-amber-900 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-100",
+                    severe: "border-red-200 bg-red-50/40 text-red-900 dark:border-red-900/40 dark:bg-red-950/20 dark:text-red-100"
+                  };
+                  
+                  const activeSeverityClass = severityStyles[damage.severity?.toLowerCase()] || "border-border bg-muted/20 text-foreground";
 
-                    const severityColors = {
-                      minor: "from-blue-500 to-cyan-500",
-                      moderate: "from-orange-500 to-amber-500",
-                      severe: "from-red-500 to-rose-500"
-                    };
+                  const badgeStyles: Record<string, string> = {
+                    minor: "bg-blue-100/80 text-blue-700 border-blue-200 dark:bg-blue-900/50 dark:text-blue-300 dark:border-blue-800",
+                    moderate: "bg-amber-100/80 text-amber-700 border-amber-200 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-800",
+                    severe: "bg-red-100/80 text-red-700 border-red-200 dark:bg-red-900/50 dark:text-red-300 dark:border-red-800"
+                  };
 
-                    return (
-                      <div 
-                        key={index}
-                        className="group relative overflow-hidden rounded-xl bg-white dark:bg-card p-5 shadow-md hover:shadow-xl transition-all duration-300 border border-border/50 hover:border-orange-300 dark:hover:border-orange-700"
-                      >
-                        {/* Gradient accent line */}
-                        <div className={cn(
-                          "absolute top-0 left-0 right-0 h-1 bg-gradient-to-r",
-                          damage.severity === "minor" && severityColors.minor,
-                          damage.severity === "moderate" && severityColors.moderate,
-                          damage.severity === "severe" && severityColors.severe
-                        )} />
-                        
-                        <div className="flex items-start gap-3">
-                          {/* Icon */}
-                          <div className={cn(
-                            "flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br text-white shadow-md flex-shrink-0",
-                            damage.severity === "minor" && severityColors.minor,
-                            damage.severity === "moderate" && severityColors.moderate,
-                            damage.severity === "severe" && severityColors.severe
-                          )}>
-                            {getDamageIcon(damage.type)}
+                  const activeBadgeClass = badgeStyles[damage.severity?.toLowerCase()] || "bg-muted text-muted-foreground border-border";
+
+                  return (
+                    <div 
+                      key={index}
+                      className={cn(
+                        "p-5 rounded-xl border flex flex-col gap-3 transition-colors hover:shadow-sm",
+                        activeSeverityClass
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 w-full">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-semibold text-base">{damage.type}</h4>
+                            <Badge variant="outline" className={cn("text-[10px] uppercase font-bold tracking-wider px-2 py-0 h-5 border flex-shrink-0 ml-3", activeBadgeClass)}>
+                              {damage.severity}
+                            </Badge>
                           </div>
-
-                          {/* Content */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                              <h4 className="font-semibold text-sm">{damage.type}</h4>
-                              <Badge 
-                                className={cn(
-                                  "text-xs flex-shrink-0 font-semibold",
-                                  damage.severity === "minor" && "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border-blue-300",
-                                  damage.severity === "moderate" && "bg-orange-100 text-orange-700 dark:bg-orange-950/50 dark:text-orange-300 border-orange-300",
-                                  damage.severity === "severe" && "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300 border-red-300"
-                                )}
-                              >
-                                {damage.severity}
-                              </Badge>
-                            </div>
-                            
-                            <div className="mb-2">
-                              <Badge variant="outline" className="text-xs bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300">
-                                <MapPin className="h-3 w-3 mr-1" />
-                                {damage.location}
-                              </Badge>
-                            </div>
-                            
-                            <p className="text-xs text-muted-foreground leading-relaxed">{damage.description}</p>
+                          
+                          <div className="flex items-center text-[13px] opacity-80 mb-3 font-medium">
+                            <MapPin className="h-3.5 w-3.5 mr-1" />
+                            {damage.location}
                           </div>
+                          
+                          <p className="text-sm opacity-90 leading-relaxed">
+                            {damage.description}
+                          </p>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : (
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-6 border-l-4 border-green-500">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-green-500 text-white shadow-lg">
-                    <CheckCircle2 className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-green-700 dark:text-green-300 mb-1">No Damages Detected</h3>
-                    <p className="text-sm text-green-600 dark:text-green-400">The analyzed images show no significant visible damages or defects</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Recommendations Grid */}
-            {damageAnalysis.recommendations && damageAnalysis.recommendations.length > 0 && (
-              <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/20 dark:to-purple-950/20 p-6 border-l-4 border-purple-500">
-                <div className="flex items-start gap-4">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-500 text-white shadow-lg flex-shrink-0">
-                    <Shield className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold mb-3">Expert Recommendations</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {damageAnalysis.recommendations.map((rec: string, index: number) => (
-                        <div key={index} className="flex items-start gap-2 text-sm bg-white/60 dark:bg-background/40 p-3 rounded-lg">
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                            {index + 1}
-                          </div>
-                          <span className="text-foreground/80">{rec}</span>
-                        </div>
-                      ))}
                     </div>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
-            )}
-
-            {/* Disclaimer */}
-            <div className="flex items-start gap-3 p-4 bg-amber-50/50 dark:bg-amber-950/10 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-amber-800 dark:text-amber-200">
-                <strong>Important:</strong> This AI analysis is based solely on visible damage in the provided photos. Always conduct a thorough physical inspection and professional assessment before making any purchase decision.
-              </p>
             </div>
+          )}
+
+          {/* Context & Summary section */}
+          {(damageAnalysis.summary || (damageAnalysis.recommendations && damageAnalysis.recommendations.length > 0)) && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-border/40">
+              
+              {damageAnalysis.summary && (
+                <div className="space-y-4">
+                  <h4 className="flex items-center gap-2 font-semibold text-[13px] text-muted-foreground tracking-wider uppercase">
+                    <Search className="h-4 w-4" /> Assessment Summary
+                  </h4>
+                  <p className="text-sm leading-relaxed text-foreground/90">
+                    {damageAnalysis.summary}
+                  </p>
+                </div>
+              )}
+
+              {damageAnalysis.recommendations && damageAnalysis.recommendations.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="flex items-center gap-2 font-semibold text-[13px] text-muted-foreground tracking-wider uppercase">
+                    <Shield className="h-4 w-4" /> Recommendations
+                  </h4>
+                  <ul className="space-y-3">
+                    {damageAnalysis.recommendations.map((rec: string, index: number) => (
+                      <li key={index} className="text-sm flex items-start gap-3">
+                        <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-foreground/40 flex-shrink-0" />
+                        <span className="leading-relaxed text-foreground/90">{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Disclaimer text */}
+          <div className="flex items-start gap-3 text-xs text-muted-foreground/80 bg-muted/30 border border-border/50 p-4 rounded-xl mt-6">
+            <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              <strong>Disclaimer:</strong> This is an AI-assisted visual assessment based on available listing imagery. It is not a substitute for a professional physical inspection. Unseen mechanical or structural issues may exist outside of the provided photographs.
+            </p>
           </div>
-        )}
-      </div>
+
+        </div>
+      )}
     </div>
   );
 }
