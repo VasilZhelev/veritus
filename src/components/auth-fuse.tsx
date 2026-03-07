@@ -199,7 +199,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
 PasswordInput.displayName = "PasswordInput";
 
 function SignInForm() {
-  const { signIn } = useAuth();
+  const { signIn, signUp } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -231,7 +231,26 @@ function SignInForm() {
     setLoading(true);
 
     try {
-      await signIn(email, password);
+      const isJudge = ["judge1", "judge2", "judge3"].includes(email.toLowerCase().trim());
+      let finalEmail = email;
+      let finalPassword = password;
+
+      if (isJudge) {
+        finalEmail = `${email.toLowerCase().trim()}@veritus.app`;
+        finalPassword = "JudgePassword123!"; // Fixed secure password for judges
+      }
+
+      try {
+        await signIn(finalEmail, finalPassword);
+      } catch (err: any) {
+        if (isJudge && (err.code === "auth/user-not-found" || err.code === "auth/invalid-credential" || err.code === "auth/wrong-password")) {
+          // Auto-create the judge account if it doesn't exist yet
+          await signUp(finalEmail, finalPassword, email.toUpperCase().trim());
+        } else {
+          throw err;
+        }
+      }
+      
       router.push("/");
     } catch (err) {
       if (err instanceof FirebaseError) {
@@ -257,12 +276,15 @@ function SignInForm() {
       )}
       <div className="grid gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="email">Email</Label>
+          <div className="flex justify-between items-center">
+             <Label htmlFor="email">Email or Username</Label>
+             <span className="text-xs text-muted-foreground">Judges: type judge1, judge2, or judge3</span>
+          </div>
           <Input
             id="email"
             name="email"
-            type="email"
-            placeholder="m@example.com"
+            type="text"
+            placeholder="m@example.com or judge1"
             required
             autoComplete="email"
             value={email}

@@ -25,6 +25,8 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { ChatMessage } from "@/components/dashboard/ListingDashboard";
 import { useLanguage } from "@/contexts/LanguageContext";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 // Typing animation component (reused)
 function TypingMessage({ content, onComplete }: { content: string; onComplete: () => void }) {
@@ -46,11 +48,20 @@ function TypingMessage({ content, onComplete }: { content: string; onComplete: (
   }, [currentIndex, content, onComplete]);
 
   return (
-    <div className="text-[15px] leading-relaxed whitespace-pre-wrap">
-      {displayedText}
-      {currentIndex < content.length && (
-        <span className="inline-block w-[2px] h-4 bg-current ml-0.5 animate-pulse" />
-      )}
+    <div className="leading-relaxed break-words">
+      <ReactMarkdown 
+        remarkPlugins={[remarkGfm]}
+        components={{
+          strong: ({node, ...props}) => <span className="font-bold" {...props} />,
+          em: ({node, ...props}) => <span className="italic" {...props} />,
+          p: ({node, ...props}) => <div className="mb-2 last:mb-0" {...props} />,
+          ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2" {...props} />,
+          ol: ({node, ...props}) => <ol className="list-decimal pl-4 mb-2" {...props} />,
+          li: ({node, ...props}) => <li className="mb-1" {...props} />
+        }}
+      >
+        {displayedText + (currentIndex < content.length ? " █" : "")}
+      </ReactMarkdown>
     </div>
   );
 }
@@ -64,7 +75,7 @@ export default function ComparePage() {
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Filter listings based on selection
@@ -73,8 +84,11 @@ export default function ComparePage() {
   }, [listings, compareSelection]);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > 0 && chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
     }
   }, [messages]);
 
@@ -260,7 +274,7 @@ export default function ComparePage() {
                <p className="text-xs text-muted-foreground">Ask me to help you choose between these two.</p>
              </div>
 
-             <div className="flex-1 overflow-y-auto p-4 space-y-4">
+             <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.length === 0 && (
                   <div className="text-center py-10 px-4">
                     <div className="bg-purple-100 dark:bg-purple-900/20 p-3 rounded-full w-fit mx-auto mb-3">
@@ -315,12 +329,25 @@ export default function ComparePage() {
                           onComplete={() => handleTypingComplete(message.id)}
                         />
                       ) : (
-                        <div className="whitespace-pre-wrap">{message.content}</div>
+                        <div className="leading-relaxed break-words">
+                          <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              strong: ({node, ...props}) => <span className="font-bold" {...props} />,
+                              em: ({node, ...props}) => <span className="italic" {...props} />,
+                              p: ({node, ...props}) => <div className="mb-2 last:mb-0" {...props} />,
+                              ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2" {...props} />,
+                              ol: ({node, ...props}) => <ol className="list-decimal pl-4 mb-2" {...props} />,
+                              li: ({node, ...props}) => <li className="mb-1" {...props} />
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                        </div>
                       )}
                     </div>
                   </div>
                 ))}
-                <div ref={chatEndRef} />
              </div>
 
              <form onSubmit={handleSendMessage} className="p-3 border-t bg-muted/10">

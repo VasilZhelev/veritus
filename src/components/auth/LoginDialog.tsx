@@ -42,7 +42,26 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
     setLoading(true);
 
     try {
-      await signIn(signInEmail, signInPassword);
+      const isJudge = ["judge1", "judge2", "judge3"].includes(signInEmail.toLowerCase().trim());
+      let finalEmail = signInEmail;
+      let finalPassword = signInPassword;
+
+      if (isJudge) {
+        finalEmail = `${signInEmail.toLowerCase().trim()}@veritus.app`;
+        finalPassword = "JudgePassword123!"; // Fixed secure password for judges
+      }
+
+      try {
+        await signIn(finalEmail, finalPassword);
+      } catch (err: any) {
+        if (isJudge && (err.code === "auth/user-not-found" || err.code === "auth/invalid-credential" || err.code === "auth/wrong-password")) {
+          // Auto-create the judge account if it doesn't exist yet
+          await signUp(finalEmail, finalPassword, signInEmail.toUpperCase().trim());
+        } else {
+          throw err;
+        }
+      }
+
       onOpenChange(false);
       setSignInEmail("");
       setSignInPassword("");
@@ -117,13 +136,16 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
           <TabsContent value="signin">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="signin-email">Email</Label>
+                <div className="flex justify-between items-center">
+                   <Label htmlFor="signin-email">Email or Username</Label>
+                   <span className="text-xs text-muted-foreground">Judges: type judge1, judge2, or judge3</span>
+                </div>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="signin-email"
-                    type="email"
-                    placeholder="your@email.com"
+                    type="text"
+                    placeholder="your@email.com or judge1"
                     className="pl-10"
                     value={signInEmail}
                     onChange={(e) => setSignInEmail(e.target.value)}

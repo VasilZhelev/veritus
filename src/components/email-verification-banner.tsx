@@ -15,7 +15,8 @@ export function EmailVerificationBanner() {
 
   // Check if email is verified
   const isVerified = user?.emailVerified ?? false;
-  const shouldShow = !dismissed && user && !isVerified;
+  const isJudge = Boolean(user?.email?.toLowerCase().startsWith("judge") && user?.email?.toLowerCase().endsWith("@veritus.app"));
+  const shouldShow = !dismissed && user && !isVerified && !isJudge;
 
   // Auto-check verification status every 30 seconds
   useEffect(() => {

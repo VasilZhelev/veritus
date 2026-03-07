@@ -17,6 +17,8 @@ import { SaveListingButton } from "./SaveListingButton";
 import { useListings } from "@/contexts/ListingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import dynamic from "next/dynamic";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 // Lazy load tab components for optimization
 const MainInfoTab = dynamic(() => import("./tabs/MainInfoTab"), {
@@ -57,11 +59,20 @@ function TypingMessage({ content, onComplete }: { content: string; onComplete: (
   }, [currentIndex, content, onComplete]);
 
   return (
-    <div className="text-[15px] leading-relaxed whitespace-pre-wrap">
-      {displayedText}
-      {currentIndex < content.length && (
-        <span className="inline-block w-[2px] h-4 bg-current ml-0.5 animate-pulse" />
-      )}
+    <div className="text-[15px] leading-relaxed break-words">
+      <ReactMarkdown 
+        remarkPlugins={[remarkGfm]}
+        components={{
+          strong: ({node, ...props}) => <span className="font-bold" {...props} />,
+          em: ({node, ...props}) => <span className="italic" {...props} />,
+          p: ({node, ...props}) => <div className="mb-2 last:mb-0" {...props} />,
+          ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2" {...props} />,
+          ol: ({node, ...props}) => <ol className="list-decimal pl-4 mb-2" {...props} />,
+          li: ({node, ...props}) => <li className="mb-1" {...props} />
+        }}
+      >
+        {displayedText + (currentIndex < content.length ? " █" : "")}
+      </ReactMarkdown>
     </div>
   );
 }
@@ -90,7 +101,7 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [usedSuggestions, setUsedSuggestions] = useState<Set<string>>(new Set());
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Load saved chat history on mount
   useEffect(() => {
@@ -109,8 +120,11 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
 
   // Only scroll chat when new messages are added
   useEffect(() => {
-    if (messages.length > 0) {
-      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > 0 && chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
     }
   }, [messages]);
 
@@ -269,7 +283,7 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-4 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent">
+              <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-6 space-y-4 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-track]:bg-transparent">
                 {messages.length === 0 && (
                   <div className="flex flex-col items-center justify-center h-full text-center px-4 py-12">
                     <div className="mb-4 p-3 bg-muted/50 rounded-full">
@@ -301,14 +315,25 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
                           onComplete={() => handleTypingComplete(message.id)}
                         />
                       ) : (
-                        <div className="text-[15px] leading-relaxed whitespace-pre-wrap">
-                          {message.content}
+                        <div className="text-[15px] leading-relaxed break-words">
+                          <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              strong: ({node, ...props}) => <span className="font-bold" {...props} />,
+                              em: ({node, ...props}) => <span className="italic" {...props} />,
+                              p: ({node, ...props}) => <div className="mb-2 last:mb-0" {...props} />,
+                              ul: ({node, ...props}) => <ul className="list-disc pl-4 mb-2" {...props} />,
+                              ol: ({node, ...props}) => <ol className="list-decimal pl-4 mb-2" {...props} />,
+                              li: ({node, ...props}) => <li className="mb-1" {...props} />
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
                         </div>
                       )}
                     </div>
                   </div>
                 ))}
-                <div ref={chatEndRef} />
               </div>
 
               {/* Suggestions */}
