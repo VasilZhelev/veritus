@@ -40,7 +40,7 @@ interface HeroProps {
     placeholders: string[];
     helperText?: string;
   };
-  image: {
+  image?: {
     light: string;
     dark: string;
     alt: string;
@@ -73,7 +73,7 @@ export function HeroSection({
     });
     return () => observer.disconnect();
   }, []);
-  const imageSrc = !isDark ? image.light : image.dark;
+  const imageSrc = image ? (!isDark ? image.light : image.dark) : "";
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     inputValueRef.current = event.target.value;
@@ -146,26 +146,28 @@ export function HeroSection({
           )}
 
           {/* Image with Glow */}
-          <div className="relative pt-12">
-            <MockupFrame
-              className="animate-appear opacity-0 delay-700"
-              size="small"
-            >
-              <Mockup type="responsive">
-                <Image
-                  src={imageSrc}
-                  alt={image.alt}
-                  width={1248}
-                  height={765}
-                  priority
-                />
-              </Mockup>
-            </MockupFrame>
-            <Glow
-              variant="top"
-              className="animate-appear-zoom opacity-0 delay-1000"
-            />
-          </div>
+          {image && (
+            <div className="relative pt-12">
+              <MockupFrame
+                className="animate-appear opacity-0 delay-700"
+                size="small"
+              >
+                <Mockup type="responsive">
+                  <Image
+                    src={imageSrc}
+                    alt={image.alt}
+                    width={1248}
+                    height={765}
+                    priority
+                  />
+                </Mockup>
+              </MockupFrame>
+              <Glow
+                variant="top"
+                className="animate-appear-zoom opacity-0 delay-1000"
+              />
+            </div>
+          )}
         </div>
       </div>
     </section>
