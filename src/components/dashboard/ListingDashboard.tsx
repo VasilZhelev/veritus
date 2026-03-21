@@ -95,7 +95,7 @@ type TabType = "main" | "damage" | "vin";
 export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashboardProps) {
   const { user } = useAuth();
   const { getSavedListingWithChat, toggleLike } = useListings();
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [activeTab, setActiveTab] = useState<TabType>("main");
   
   // Chat State (Persistent across tabs)
@@ -178,7 +178,7 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
       const errorResponse: ChatMessage = {
         id: `msg-${Date.now()}`,
         role: "assistant",
-        content: "I'm sorry, I'm having trouble connecting right now. Please try again later.",
+        content: t('dashboard.chatError'),
         timestamp: new Date().toISOString(),
         isTyping: true,
       };
@@ -214,7 +214,7 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
         <SaveListingButton 
           listing={listing} 
           chatHistory={messages}
-          metadata={{ vinInfo: propVinInfo }}
+          metadata={{ vinInfo: propVinInfo || null }}
         />
       </div>
 
@@ -234,7 +234,7 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
                 )}
               >
                 <Car className="h-4 w-4" />
-                Main Info
+                {t('dashboard.mainInfo')}
               </button>
               <button
                 onClick={() => setActiveTab("damage")}
@@ -246,7 +246,7 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
                 )}
               >
                 <Wrench className="h-4 w-4" />
-                Damage Detection
+                {t('dashboard.damageDetection')}
               </button>
               <button
                 onClick={() => setActiveTab("vin")}
@@ -258,7 +258,7 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
                 )}
               >
                 <FileCheck className="h-4 w-4" />
-                VIN Checkup
+                {t('dashboard.vinCheckup')}
               </button>
             </div>
 
@@ -280,9 +280,9 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
               <div className="p-6 border-b border-border/30">
                 <div className="flex items-center gap-3 mb-1">
                   <Sparkles className="h-5 w-5 text-primary" />
-                  <h3 className="text-xl font-bold">Ask anything</h3>
+                  <h3 className="text-xl font-bold">{t('dashboard.askAnything')}</h3>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">Get instant insights about this car</p>
+                <p className="text-sm text-muted-foreground mt-1">{t('dashboard.getInsights')}</p>
               </div>
 
               {/* Messages */}
@@ -292,8 +292,8 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
                     <div className="mb-4 p-3 bg-muted/50 rounded-full">
                       <Sparkles className="h-8 w-8 text-primary" />
                     </div>
-                    <p className="text-sm text-muted-foreground mb-1 font-medium">Start a conversation</p>
-                    <p className="text-xs text-muted-foreground/70">Ask me anything about this listing</p>
+                    <p className="text-sm text-muted-foreground mb-1 font-medium">{t('dashboard.startConversation')}</p>
+                    <p className="text-xs text-muted-foreground/70">{t('dashboard.askAboutListing')}</p>
                   </div>
                 )}
                 {messages.map((message) => (
@@ -364,7 +364,7 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
                   <Input
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
-                    placeholder="Ask about this car..."
+                    placeholder={t('dashboard.askAboutCar')}
                     className="flex-1 border-border bg-background rounded-full px-4"
                     disabled={isTyping}
                   />

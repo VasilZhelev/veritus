@@ -21,7 +21,7 @@ interface DamageDetectionTabProps {
 }
 
 export default function DamageDetectionTab({ listing }: DamageDetectionTabProps) {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [damageAnalysis, setDamageAnalysis] = useState<any>(null);
   const [isDamageLoading, setIsDamageLoading] = useState(false);
   const [damageError, setDamageError] = useState<string | null>(null);
@@ -44,7 +44,13 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
           const response = await fetch('/api/damage-check', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageUrls: listingImages, language }),
+            body: JSON.stringify({ 
+              imageUrls: listingImages, 
+              language,
+              brand: listing.brand,
+              model: listing.model,
+              year: listing.year
+            }),
           });
           
           const data = await response.json();
@@ -88,9 +94,9 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
       {/* Header */}
       <div className="flex items-center justify-between mb-8 border-b border-border/40 pb-6">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">AI Condition Assessment</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">{t('damage.title')}</h2>
           <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
-            <Camera className="h-4 w-4" /> Analyzed {Math.min(2, listingImages.length)} interior/exterior image{listingImages.length > 1 ? 's' : ''}
+            <Camera className="h-4 w-4" /> {t('damage.analyzedCount', { count: Math.min(2, listingImages.length) })}
           </p>
         </div>
       </div>
@@ -98,8 +104,8 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
       {isDamageLoading && (
         <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-dashed border-border/60 bg-muted/20">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-500 border-t-transparent mb-4" />
-          <h3 className="font-medium">Scanning for issues</h3>
-          <p className="text-sm text-muted-foreground mt-1">Our AI is reviewing high-resolution details...</p>
+          <h3 className="font-medium">{t('damage.scanning')}</h3>
+          <p className="text-sm text-muted-foreground mt-1">{t('damage.scanningDesc')}</p>
         </div>
       )}
 
@@ -108,13 +114,13 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
           <div className="h-14 w-14 rounded-full bg-destructive/10 flex items-center justify-center mb-4 ring-8 ring-destructive/5">
             <AlertCircle className="h-7 w-7 text-destructive" />
           </div>
-          <h3 className="text-lg font-semibold text-destructive mb-1">Analysis Unavailable</h3>
+          <h3 className="text-lg font-semibold text-destructive mb-1">{t('damage.analysisFailed')}</h3>
           <p className="text-sm text-destructive/80 max-w-md mb-6">{damageError}</p>
           <button 
             onClick={handleRetry}
             className="px-5 py-2.5 bg-background border border-border shadow-sm hover:shadow hover:bg-muted text-sm font-medium rounded-lg transition-all"
           >
-            Try Again
+            {t('button.tryAgain')}
           </button>
         </div>
       )}
@@ -129,19 +135,18 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
               <div className="h-24 w-24 rounded-full bg-purple-500/10 flex items-center justify-center mb-6 ring-8 ring-purple-500/5">
                 <CheckCircle2 className="h-12 w-12 text-purple-600 dark:text-purple-400" />
               </div>
-              <h3 className="text-2xl font-semibold text-purple-900 dark:text-purple-100 mb-3">Pristine Condition</h3>
+              <h3 className="text-2xl font-semibold text-purple-900 dark:text-purple-100 mb-3">{t('damage.pristineCondition')}</h3>
               <p className="text-purple-700/80 dark:text-purple-300/80 max-w-lg text-sm leading-relaxed">
-                Our AI scanning detected no visible damages, scratches, or defects in the provided images. 
-                The exterior and interior appear to be in excellent condition.
+                {t('damage.pristineConditionDesc')}
               </p>
               
               <div className="mt-8 grid grid-cols-2 gap-4 w-full max-w-sm">
                 <div className="p-4 rounded-xl bg-background/60 border border-purple-500/10 flex flex-col items-center">
-                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Overall</span>
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t('damage.overall')}</span>
                   <span className="font-semibold text-purple-700 dark:text-purple-300">{damageAnalysis.overallCondition || "Excellent"}</span>
                 </div>
                 <div className="p-4 rounded-xl bg-background/60 border border-purple-500/10 flex flex-col items-center">
-                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Severity</span>
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{t('damage.severity')}</span>
                   <span className="font-semibold text-purple-700 dark:text-purple-300">None</span>
                 </div>
               </div>
@@ -153,21 +158,21 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
                 <div>
                   <h3 className="text-lg font-semibold flex items-center gap-2 text-foreground">
                     <AlertTriangle className="h-5 w-5 text-amber-500" />
-                    Detected Issues
+                    {t('damage.issuesDetected')}
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Found {damageAnalysis.damages.length} area{damageAnalysis.damages.length !== 1 ? 's' : ''} requiring attention
+                    {t('damage.issuesRequiring', { count: damageAnalysis.damages.length })}
                   </p>
                 </div>
                 
                 <div className="inline-flex flex-col self-start sm:self-auto rounded-lg bg-muted text-sm border flex-shrink-0 overflow-hidden">
                   <div className="flex border-b border-border/50">
-                    <div className="px-3 py-1.5 border-r border-border text-muted-foreground bg-background/50">Condition</div>
+                    <div className="px-3 py-1.5 border-r border-border text-muted-foreground bg-background/50">{t('damage.condition')}</div>
                     <div className="px-3 py-1.5 font-medium bg-background">{damageAnalysis.overallCondition || "Fair"}</div>
                   </div>
                   {totalCostEUR > 0 && (
                     <div className="flex bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400">
-                      <div className="px-3 py-1.5 border-r border-amber-200 dark:border-amber-900/50 font-semibold bg-amber-100/50 dark:bg-amber-900/20">Est. Repair</div>
+                      <div className="px-3 py-1.5 border-r border-amber-200 dark:border-amber-900/50 font-semibold bg-amber-100/50 dark:bg-amber-900/20">{t('damage.estRepair')}</div>
                       <div className="px-3 py-1.5 font-bold">€{totalCostEUR.toLocaleString()}</div>
                     </div>
                   )}
@@ -240,7 +245,7 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
               {damageAnalysis.summary && (
                 <div className="space-y-4">
                   <h4 className="flex items-center gap-2 font-semibold text-[13px] text-muted-foreground tracking-wider uppercase">
-                    <Search className="h-4 w-4" /> Assessment Summary
+                    <Search className="h-4 w-4" /> {t('damage.assessmentSummary')}
                   </h4>
                   <p className="text-sm leading-relaxed text-foreground/90">
                     {damageAnalysis.summary}
@@ -251,7 +256,7 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
               {damageAnalysis.recommendations && damageAnalysis.recommendations.length > 0 && (
                 <div className="space-y-4">
                   <h4 className="flex items-center gap-2 font-semibold text-[13px] text-muted-foreground tracking-wider uppercase">
-                    <Shield className="h-4 w-4" /> Recommendations
+                    <Shield className="h-4 w-4" /> {t('damage.expertRecommendations')}
                   </h4>
                   <ul className="space-y-3">
                     {damageAnalysis.recommendations.map((rec: string, index: number) => (
@@ -270,7 +275,7 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
           <div className="flex items-start gap-3 text-xs text-muted-foreground/80 bg-muted/30 border border-border/50 p-4 rounded-xl mt-6">
             <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
             <p className="leading-relaxed">
-              <strong>Disclaimer:</strong> This is an AI-assisted visual assessment based on available listing imagery. It is not a substitute for a professional physical inspection. Unseen mechanical or structural issues may exist outside of the provided photographs.
+              <strong>{t('damage.important')}</strong> {t('damage.disclaimer')}
             </p>
           </div>
 

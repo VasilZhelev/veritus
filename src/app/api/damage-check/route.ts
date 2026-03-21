@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { imageUrls, language } = await req.json();
+    const { imageUrls, language, brand, model, year } = await req.json();
 
     if (!imageUrls || !Array.isArray(imageUrls) || imageUrls.length === 0) {
       return NextResponse.json({ error: "No images provided" }, { status: 400 });
@@ -51,7 +51,8 @@ export async function POST(req: Request) {
     }
 
     // Construct the prompt for damage detection with structured JSON output
-    const prompt = `You are an expert car damage inspector. Analyze the provided car images and identify any visible damages, defects, or issues.
+    const prompt = `You are an expert car damage inspector and collision repair estimator. Analyze the provided car images and identify any visible damages, defects, or issues.
+${brand && model ? `The vehicle being inspected is a ${year || ''} ${brand} ${model}. CRITICAL: You MUST use this exact make, model, and year to calculate highly realistic and accurate repair estimations. Luxury or rare parts will cost significantly more than standard ones. ` : ''}
 IMPORTANT: Do NOT flag superficial dirt, dust, mud, or dry water spots as damage. Only report actual structural, paint, or material damage (e.g. dents, deep scratches, rust, cracked glass).
 
 Provide your analysis in the following JSON format:
@@ -64,7 +65,7 @@ Provide your analysis in the following JSON format:
       "type": "type of damage (e.g., dent, scratch, rust, paint chip)",
       "severity": "minor" | "moderate" | "severe",
       "description": "brief description",
-      "estimatedCostEUR": number (Estimated repair cost in EUR just for this specific issue. Provide an integer, e.g. 150. If 0, put 0)
+      "estimatedCostEUR": number (Highly accurate repair and parts cost in EUR for this EXACT make/model. E.g. replacing a bumper on an S-Class is 1500+, on a Golf it is 300. Provide integer.)
     }
   ],
   "recommendations": [

@@ -13,12 +13,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CarListing } from "@/components/ui/car-listing-card";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MainInfoTabProps {
   listing: CarListing;
 }
 
 export default function MainInfoTab({ listing }: MainInfoTabProps) {
+  const { t } = useLanguage();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [galleryImageIndex, setGalleryImageIndex] = useState(0);
@@ -67,10 +69,10 @@ export default function MainInfoTab({ listing }: MainInfoTabProps) {
         {/* Key Specs - Grid layout */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-border">
           {[
-            { label: "Year", value: listing.year || "—", icon: Calendar },
-            { label: "Mileage", value: listingMileage ? `${(listingMileage / 1000).toFixed(0)}k km` : "—", icon: Gauge },
-            { label: "Engine", value: listing.attributes?.["Двигател"] || listing.fuelType || "—", icon: Fuel },
-            { label: "Transmission", value: listing.attributes?.["Скоростна кутия"] || listing.transmission || "—", icon: Settings },
+            { label: t('mainInfo.year'), value: listing.year || "—", icon: Calendar },
+            { label: t('mainInfo.mileage'), value: listingMileage ? `${(listingMileage / 1000).toFixed(0)}k km` : "—", icon: Gauge },
+            { label: t('mainInfo.engine'), value: listing.attributes?.["Двигател"] || listing.fuelType || "—", icon: Fuel },
+            { label: t('mainInfo.transmission'), value: listing.attributes?.["Скоростна кутия"] || listing.transmission || "—", icon: Settings },
           ].map(({ label, value, icon: Icon }) => (
             <div 
               key={label}
@@ -93,7 +95,7 @@ export default function MainInfoTab({ listing }: MainInfoTabProps) {
           <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/20 to-transparent" />
           
           <h2 className="text-2xl font-bold mb-6 relative">
-            <span className="inline-block border-l-4 border-primary pl-4">Photo Gallery</span>
+            <span className="inline-block border-l-4 border-primary pl-4">{t('mainInfo.photoGallery')}</span>
           </h2>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -129,7 +131,7 @@ export default function MainInfoTab({ listing }: MainInfoTabProps) {
           {/* Vertical accent bar */}
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
           
-          <h2 className="text-2xl font-bold mb-6">Description</h2>
+          <h2 className="text-2xl font-bold mb-6">{t('mainInfo.description')}</h2>
           <div className="relative">
             <p className={cn(
               "text-base leading-relaxed text-foreground/80 whitespace-pre-line transition-all duration-300",
@@ -142,7 +144,7 @@ export default function MainInfoTab({ listing }: MainInfoTabProps) {
                 onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                 className="mt-4 text-primary hover:text-primary/80 font-medium text-sm transition-colors"
               >
-                {isDescriptionExpanded ? "Show Less" : "Expand Description"}
+                {isDescriptionExpanded ? t('mainInfo.showLess') : t('mainInfo.expandDescription')}
               </button>
             )}
           </div>
@@ -154,7 +156,7 @@ export default function MainInfoTab({ listing }: MainInfoTabProps) {
         {/* Corner accent */}
         <div className="absolute top-0 left-0 w-24 h-1 bg-gradient-to-r from-primary to-blue-500" />
         
-        <h2 className="text-2xl font-bold mb-8">Technical Specifications</h2>
+        <h2 className="text-2xl font-bold mb-8">{t('mainInfo.technicalSpecs')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
           {listing.attributes && Object.entries(listing.attributes)
             .filter(([key]) => !["Особености", "Местоположение", "Двигател", "Скоростна кутия", "Дата на производство", "Пробег"].includes(key))
@@ -176,7 +178,7 @@ export default function MainInfoTab({ listing }: MainInfoTabProps) {
           asChild
         >
           <a href={listing.url} target="_blank" rel="noopener noreferrer">
-            View Original Listing
+            {t('mainInfo.viewOriginal')}
             <ExternalLink className="h-4 w-4 ml-2" />
           </a>
         </Button>
@@ -188,7 +190,7 @@ export default function MainInfoTab({ listing }: MainInfoTabProps) {
           {/* Vertical accent bar */}
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500" />
           
-          <h2 className="text-2xl font-bold mb-6">Features & Equipment</h2>
+          <h2 className="text-2xl font-bold mb-6">{t('mainInfo.features')}</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {listing.attributes["Особености"].split(", ").map((feature: string, index: number) => (
               <div

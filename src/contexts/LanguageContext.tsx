@@ -176,6 +176,16 @@ const translations: Record<Language, Record<string, string>> = {
     "damage.expertRecommendations": "Expert Recommendations",
     "damage.important": "Important:",
     "damage.disclaimer": "This AI analysis is based solely on visible damage in the provided photos. Always conduct a thorough physical inspection and professional assessment before making any purchase decision.",
+    "damage.pristineCondition": "Pristine Condition",
+    "damage.pristineConditionDesc": "Our AI scanning detected no visible damages, scratches, or defects in the provided images. The exterior and interior appear to be in excellent condition.",
+    "button.tryAgain": "Try Again",
+    "damage.estRepair": "Est. Repair",
+    "damage.condition": "Condition",
+    "damage.overall": "Overall",
+    "damage.severity": "Severity",
+    "damage.scanning": "Scanning for issues",
+    "damage.scanningDesc": "Our AI is reviewing high-resolution details...",
+    "damage.analyzedCount": "Analyzed {count} interior/exterior image{plural}",
     
     // VIN Checkup Tab
     "vin.listed": "VIN Listed",
@@ -204,6 +214,10 @@ const translations: Record<Language, Record<string, string>> = {
     "vin.jumpedAlot": "Mileage jumped a lot after the last VIN record—request maintenance logs.",
     "vin.origin": "Origin:",
     "vin.loadingMap": "Loading Map...",
+    "vin.noVinDetected": "No VIN Detected",
+    "vin.askOwner": "Ask the owner of the listing for the VIN and then put it in here if you want a VIN decoding.",
+    "vin.decodeButton": "Decode VIN",
+    "vin.enterVinPlaceholder": "Enter VIN (17 characters)",
     
     // Car Listing Card
     "card.priceNotAvailable": "Price not available",
@@ -375,6 +389,16 @@ const translations: Record<Language, Record<string, string>> = {
     "damage.expertRecommendations": "Експертни препоръки",
     "damage.important": "Важно:",
     "damage.disclaimer": "Този AI анализ се основава единствено на видимите повреди в предоставените снимки. Винаги извършвайте задълбочена физическа проверка и професионална оценка преди да вземете решение за покупка.",
+    "damage.pristineCondition": "Перфектно състояние",
+    "damage.pristineConditionDesc": "Нашето AI сканиране не откри видими повреди, драскотини или дефекти в предоставените изображения. Екстериорът и интериорът изглеждат в отлично състояние.",
+    "button.tryAgain": "Опитайте отново",
+    "damage.estRepair": "Прибл. ремонт",
+    "damage.condition": "Състояние",
+    "damage.overall": "Общо",
+    "damage.severity": "Тежест",
+    "damage.scanning": "Търсене на проблеми",
+    "damage.scanningDesc": "Нашият AI преглежда детайлите с висока резолюция...",
+    "damage.analyzedCount": "Анализирани {count} интериорни/екстериорни изображения",
     
     // VIN Checkup Tab
     "vin.listed": "VIN посочен",
@@ -403,6 +427,10 @@ const translations: Record<Language, Record<string, string>> = {
     "vin.jumpedAlot": "Пробегът скочи много след последния VIN запис—поискайте дневници за поддръжка.",
     "vin.origin": "Произход:",
     "vin.loadingMap": "Зареждане на карта...",
+    "vin.noVinDetected": "Не е открит VIN",
+    "vin.askOwner": "Попитайте собственика на обявата за VIN номера и го въведете тук, ако искате проверка по база данни.",
+    "vin.decodeButton": "Провери VIN",
+    "vin.enterVinPlaceholder": "Въведете VIN (17 символа)",
     
     // Car Listing Card
     "card.priceNotAvailable": "Цената не е налична",

@@ -21,6 +21,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { CarListing } from "@/components/ui/car-listing-card";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import dynamic from "next/dynamic";
 
 // Dynamic import for the map component (client-side only)
@@ -44,19 +47,24 @@ interface VinCheckupTabProps {
 }
 
 export default function VinCheckupTab({ listing, vinInfo: propVinInfo }: VinCheckupTabProps) {
+  const { t } = useLanguage();
   const [vinInfo, setVinInfo] = useState<any>(propVinInfo || null);
   const [isLoadingVin, setIsLoadingVin] = useState(false);
+  const [manualVin, setManualVin] = useState("");
+  const [vinInput, setVinInput] = useState("");
+  
+  const activeVin = listing.vin || manualVin;
 
   // Auto-fetch VIN info if listing has VIN but no vinInfo prop
   useEffect(() => {
     const fetchVinInfo = async () => {
-      if (listing.vin && !propVinInfo && !vinInfo && !isLoadingVin) {
+      if (activeVin && !propVinInfo && !vinInfo && !isLoadingVin) {
         setIsLoadingVin(true);
         try {
           const response = await fetch('/api/vin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ vin: listing.vin }),
+            body: JSON.stringify({ vin: activeVin }),
           });
           
           if (response.ok) {
@@ -72,7 +80,7 @@ export default function VinCheckupTab({ listing, vinInfo: propVinInfo }: VinChec
     };
 
     fetchVinInfo();
-  }, [listing.vin, propVinInfo, vinInfo, isLoadingVin]);
+  }, [activeVin, propVinInfo, vinInfo, isLoadingVin]);
 
   // VIN Logic
   const vinMileageKm = vinInfo?.details?.lastRecordedMileageKm ?? null;
@@ -83,32 +91,60 @@ export default function VinCheckupTab({ listing, vinInfo: propVinInfo }: VinChec
   const mileageAssessment =
     mileageDifference === null
       ? {
-          label: "Insufficient data",
+          label: t('vin.insufficientData'),
           tone: "text-muted-foreground",
-          description: "VIN report had no mileage entry to compare."
+          description: t('vin.noMileageEntry')
         }
       : mileageDifference < 0
       ? {
-          label: "VIN mileage is newer",
+          label: t('vin.vinMileageNewer'),
           tone: "text-amber-600 dark:text-amber-400",
-          description: "Listing mileage is lower than the last recorded reading—ask for service proof."
+          description: t('vin.lowerThanRecorded')
         }
       : mileageDifference <= 20000
       ? {
-          label: "Looks consistent",
+          label: t('vin.looksConsistent'),
           tone: "text-green-600 dark:text-green-400",
-          description: "Mileage grew as expected since the last inspection."
+          description: t('vin.grewAsExpected')
         }
       : {
-          label: "Possible discrepancy",
+          label: t('vin.possibleDiscrepancy'),
           tone: "text-red-600 dark:text-red-400",
-          description: "Mileage jumped a lot after the last VIN record—request maintenance logs."
+          description: t('vin.jumpedAlot')
         };
 
   return (
     <div className="space-y-0 min-h-[500px]">
+      {!activeVin && (
+        <div className="bg-white dark:bg-card border-r border-border/50 p-6 lg:p-8 relative min-h-[400px] flex flex-col items-center justify-center text-center">
+          <div className="p-4 bg-muted/30 rounded-full mb-4">
+            <Car className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-xl font-bold mb-2">{t('vin.noVinDetected')}</h3>
+          <p className="text-muted-foreground text-sm max-w-sm mb-6">
+            {t('vin.askOwner')}
+          </p>
+          <div className="flex w-full max-w-sm items-center space-x-2">
+            <Input 
+              type="text" 
+              placeholder={t('vin.enterVinPlaceholder')}
+              value={vinInput}
+              onChange={(e) => setVinInput(e.target.value.toUpperCase())}
+              maxLength={17}
+              className="uppercase"
+            />
+            <Button 
+               onClick={() => { if(vinInput.length === 17) setManualVin(vinInput); }}
+               disabled={vinInput.length !== 17 || isLoadingVin}
+            >
+              {t('vin.decodeButton')}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* VIN Information - Compact badge-style display */}
-      {listing.vin && (
+      {activeVin && (
         <div className="bg-white dark:bg-card border-r border-border/50 p-6 lg:p-8 relative">
           {/* Accent stripe */}
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-green-500 to-emerald-600" />
@@ -119,14 +155,14 @@ export default function VinCheckupTab({ listing, vinInfo: propVinInfo }: VinChec
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-lg font-bold">VIN Listed</h3>
+                <h3 className="text-lg font-bold">{t('vin.listed')}</h3>
                 <Badge variant="outline" className="border-green-500/50 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/30 px-2 py-0.5 text-xs">
-                  Verified
+                  {t('vin.verified')}
                 </Badge>
               </div>
-              <div className="font-mono text-sm font-semibold text-muted-foreground mb-2">{listing.vin}</div>
+              <div className="font-mono text-sm font-semibold text-muted-foreground mb-2">{activeVin}</div>
               <p className="text-xs text-muted-foreground">
-                VIN number publicly listed. {vinInfo ? 'Detailed verification below.' : isLoadingVin ? 'Checking database...' : 'Enable verification for full history.'}
+                {t('vin.publiclyListed')} {vinInfo ? t('vin.detailedVerification') : isLoadingVin ? t('vin.checkingDatabase') : t('vin.enableVerification')}
               </p>
             </div>
           </div>
@@ -148,26 +184,26 @@ export default function VinCheckupTab({ listing, vinInfo: propVinInfo }: VinChec
                 <Shield className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-xl font-bold">VIN Verification Report</h2>
-                <p className="text-xs text-muted-foreground">Database cross-reference • db.vin</p>
+                <h2 className="text-xl font-bold">{t('vin.verificationReport')}</h2>
+                <p className="text-xs text-muted-foreground">{t('vin.databaseCrossRef')}</p>
               </div>
             </div>
 
             {/* VIN Display */}
             <div className="flex items-center justify-between p-4 bg-white/80 dark:bg-background/80 backdrop-blur-sm border border-border/50 mb-4">
               <div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">VIN Number</div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-1">{t('vin.vinNumber')}</div>
                 <div className="font-mono text-base font-bold">{vinInfo.vin}</div>
               </div>
               {vinInfo.details?.imported ? (
                 <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-950/50 dark:text-orange-400 border-orange-300 dark:border-orange-800">
                   <AlertCircle className="h-3 w-3 mr-1" />
-                  Imported
+                  {t('vin.imported')}
                 </Badge>
               ) : (
                 <Badge className="bg-green-100 text-green-700 dark:bg-green-950/50 dark:text-green-400 border-green-300 dark:border-green-800">
                   <CheckCircle2 className="h-3 w-3 mr-1" />
-                  Domestic
+                  {t('vin.domestic')}
                 </Badge>
               )}
             </div>
@@ -175,10 +211,10 @@ export default function VinCheckupTab({ listing, vinInfo: propVinInfo }: VinChec
             {/* Vehicle Details Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
               {[
-                { label: "Make", value: vinInfo.details?.make, icon: Car },
-                { label: "Model", value: vinInfo.details?.model, icon: Car },
-                { label: "Year", value: vinInfo.details?.year, icon: Calendar },
-                { label: "Fuel", value: vinInfo.details?.fuel, icon: Fuel },
+                { label: t('vin.make'), value: vinInfo.details?.make, icon: Car },
+                { label: t('vin.model'), value: vinInfo.details?.model, icon: Car },
+                { label: t('vin.year'), value: vinInfo.details?.year, icon: Calendar },
+                { label: t('vin.fuel'), value: vinInfo.details?.fuel, icon: Fuel },
                 { label: "Color", value: vinInfo.details?.color, icon: Palette },
                 { label: "Body Type", value: vinInfo.details?.bodyType, icon: Car },
                 { label: "Version", value: vinInfo.details?.version, icon: Tag },
@@ -234,7 +270,7 @@ export default function VinCheckupTab({ listing, vinInfo: propVinInfo }: VinChec
             <div className="p-4 bg-white/60 dark:bg-background/60 backdrop-blur-sm border border-border/30 mb-4">
               <div className="flex items-center justify-between mb-2">
                 <div>
-                  <div className="text-xs text-muted-foreground">Mileage Check</div>
+                  <div className="text-xs text-muted-foreground">{t('vin.mileageCheck')}</div>
                   <div className={cn("text-base font-bold", mileageAssessment.tone)}>
                     {mileageAssessment.label}
                   </div>
@@ -257,7 +293,7 @@ export default function VinCheckupTab({ listing, vinInfo: propVinInfo }: VinChec
                       <Globe className="h-4 w-4" />
                     </div>
                     <div>
-                      <span className="text-sm font-bold block leading-none">Vehicle Origin</span>
+                      <span className="text-sm font-bold block leading-none">{t('vin.origin')}</span>
                       <span className="text-xs text-muted-foreground">Registration or manufacturing base</span>
                     </div>
                   </div>
