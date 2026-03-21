@@ -9,7 +9,14 @@ import {
   Car, 
   Calendar, 
   Fuel, 
-  Globe 
+  Globe,
+  Palette,
+  Tag,
+  Banknote,
+  ShieldAlert,
+  FileText,
+  Link as LinkIcon,
+  Gauge
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -166,22 +173,62 @@ export default function VinCheckupTab({ listing, vinInfo: propVinInfo }: VinChec
             </div>
 
             {/* Vehicle Details Grid */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
               {[
                 { label: "Make", value: vinInfo.details?.make, icon: Car },
                 { label: "Model", value: vinInfo.details?.model, icon: Car },
                 { label: "Year", value: vinInfo.details?.year, icon: Calendar },
                 { label: "Fuel", value: vinInfo.details?.fuel, icon: Fuel },
-              ].map(({ label, value, icon: Icon }) => (
-                <div key={label} className="p-3 bg-white/60 dark:bg-background/60 backdrop-blur-sm border border-border/30">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-                    <div className="text-xs text-muted-foreground">{label}</div>
+                { label: "Color", value: vinInfo.details?.color, icon: Palette },
+                { label: "Body Type", value: vinInfo.details?.bodyType, icon: Car },
+                { label: "Version", value: vinInfo.details?.version, icon: Tag },
+                { label: "Mileage", value: vinInfo.details?.mileage, icon: Gauge },
+                { label: "Price", value: vinInfo.details?.price ? `${vinInfo.details.price} ${vinInfo.details.currency || ''}` : null, icon: Banknote },
+              ]
+                .filter(item => item.value && String(item.value).trim() !== "" && String(item.value).toLowerCase() !== "no information")
+                .map(({ label, value, icon: Icon }) => (
+                <div key={label} className="p-3 rounded-lg bg-white/60 dark:bg-background/60 backdrop-blur-sm border border-border/50 shadow-sm transition-all hover:bg-white dark:hover:bg-background/80">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <Icon className="h-4 w-4 text-blue-500 dark:text-blue-400" />
+                    <div className="text-xs font-medium text-muted-foreground">{label}</div>
                   </div>
-                  <div className="font-semibold text-sm">{value || "—"}</div>
+                  <div className="font-semibold text-sm truncate" title={String(value)}>{value}</div>
                 </div>
               ))}
             </div>
+
+            {/* External Links / Checks (If any exist) */}
+            {([
+              { label: "Vehicle History", url: vinInfo.details?.vehicleHistory, icon: FileText, color: "text-purple-500 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-200 dark:border-purple-800" },
+              { label: "Stolen Check", url: vinInfo.details?.stolenCheck, icon: ShieldAlert, color: "text-red-500 dark:text-red-400", bg: "bg-red-50 dark:bg-red-950/30", border: "border-red-200 dark:border-red-800" },
+              { label: "Full Report", url: vinInfo.details?.vinDecoder, icon: LinkIcon, color: "text-blue-500 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-950/30", border: "border-blue-200 dark:border-blue-800" },
+            ]
+              .filter(item => item.url && String(item.url).trim() !== "" && String(item.url).toLowerCase() !== "no information" && item.url.startsWith('http'))
+              .length > 0) && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {[
+                  { label: "Vehicle History", url: vinInfo.details?.vehicleHistory, icon: FileText, color: "text-purple-500 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-950/30", border: "border-purple-200 dark:border-purple-800" },
+                  { label: "Stolen Check", url: vinInfo.details?.stolenCheck, icon: ShieldAlert, color: "text-red-500 dark:text-red-400", bg: "bg-red-50 dark:bg-red-950/30", border: "border-red-200 dark:border-red-800" },
+                  { label: "Full Report", url: vinInfo.details?.vinDecoder, icon: LinkIcon, color: "text-blue-500 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-950/30", border: "border-blue-200 dark:border-blue-800" },
+                ]
+                  .filter(item => item.url && String(item.url).trim() !== "" && String(item.url).toLowerCase() !== "no information" && item.url.startsWith('http'))
+                  .map(({ label, url, icon: Icon, color, bg, border }) => (
+                  <a 
+                    key={label}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all hover:shadow-md active:scale-95",
+                      bg, border, color
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {label}
+                  </a>
+                ))}
+              </div>
+            )}
 
             {/* Mileage Verification */}
             <div className="p-4 bg-white/60 dark:bg-background/60 backdrop-blur-sm border border-border/30 mb-4">
@@ -201,14 +248,25 @@ export default function VinCheckupTab({ listing, vinInfo: propVinInfo }: VinChec
               <p className="text-xs text-muted-foreground">{mileageAssessment.description}</p>
             </div>
 
-            {/* Import Map - Compact */}
-            {vinInfo.details?.imported && vinInfo.details?.registrationCountry && (
-              <div className="p-3 bg-white/60 dark:bg-background/60 backdrop-blur-sm border border-border/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <Globe className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                  <span className="text-xs font-medium">Origin: {vinInfo.details.registrationCountry}</span>
+            {/* Origin Map - Beautiful Compact Display */}
+            {vinInfo.details?.registrationCountry && String(vinInfo.details.registrationCountry).trim() !== "" && String(vinInfo.details.registrationCountry).toLowerCase() !== "no information" && (
+              <div className="p-4 rounded-xl bg-white/80 dark:bg-background/80 backdrop-blur-md border border-border/50 shadow-sm mt-4 transition-all hover:shadow-md">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
+                      <Globe className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-bold block leading-none">Vehicle Origin</span>
+                      <span className="text-xs text-muted-foreground">Registration or manufacturing base</span>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="text-sm font-bold bg-muted/50 dark:bg-muted/20 tracking-wider">
+                    {vinInfo.details.registrationCountry}
+                  </Badge>
                 </div>
-                <div className="h-64 rounded overflow-hidden border border-border/30">
+                <div className="h-48 sm:h-64 rounded-xl overflow-hidden border border-border/40 shadow-inner relative group">
+                  <div className="absolute inset-0 z-10 pointer-events-none rounded-xl ring-1 ring-inset ring-black/5 dark:ring-white/5" />
                   <ImportMap countryCode={vinInfo.details.registrationCountry} />
                 </div>
               </div>

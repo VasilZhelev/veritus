@@ -56,8 +56,14 @@ export async function POST(req: Request) {
         imported: detectedCountry
           ? detectedCountry !== "BG"
           : vinUpper[0].toUpperCase() !== "S", // fallback
+        color: data.color || null,
+        bodyType: data.bodyType || null,
+        mileage: data.mileage || null,
+        version: data.version || null,
+        vehicleHistory: data.vehicleHistory || null,
+        stolenCheck: data.stolenCheck || null,
+        vinDecoder: data.vinDecoder || null,
       };
-      
 
     return NextResponse.json({ vin: vinUpper, details });
   } catch (error) {

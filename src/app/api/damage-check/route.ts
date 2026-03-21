@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { imageUrls } = await req.json();
+    const { imageUrls, language } = await req.json();
 
     if (!imageUrls || !Array.isArray(imageUrls) || imageUrls.length === 0) {
       return NextResponse.json({ error: "No images provided" }, { status: 400 });
@@ -52,6 +52,7 @@ export async function POST(req: Request) {
 
     // Construct the prompt for damage detection with structured JSON output
     const prompt = `You are an expert car damage inspector. Analyze the provided car images and identify any visible damages, defects, or issues.
+IMPORTANT: Do NOT flag superficial dirt, dust, mud, or dry water spots as damage. Only report actual structural, paint, or material damage (e.g. dents, deep scratches, rust, cracked glass).
 
 Provide your analysis in the following JSON format:
 {
@@ -62,7 +63,8 @@ Provide your analysis in the following JSON format:
       "location": "specific location (e.g., front bumper, driver side door)",
       "type": "type of damage (e.g., dent, scratch, rust, paint chip)",
       "severity": "minor" | "moderate" | "severe",
-      "description": "brief description"
+      "description": "brief description",
+      "estimatedCostEUR": number (Estimated repair cost in EUR just for this specific issue. Provide an integer, e.g. 150. If 0, put 0)
     }
   ],
   "recommendations": [
@@ -74,6 +76,11 @@ Provide your analysis in the following JSON format:
 
 Be specific and accurate. If no significant damage is visible, return an empty damages array and "none" severity.`;
 
+    let finalPrompt = prompt;
+    if (language === 'bg') {
+      finalPrompt += `\nCRITICAL INSTRUCTION: Translate the values for "damages[].location", "damages[].type", "damages[].description", "recommendations", and "summary" into Bulgarian. However, you MUST keep "overallCondition", "severityLevel", and "severity" string values exactly in English as defined by the schema (e.g. "Excellent", "minor", etc.).`;
+    }
+
     try {
       const response = await ai.models.generateContent({
         model: "gemini-2.5-flash-lite",
@@ -81,7 +88,7 @@ Be specific and accurate. If no significant damage is visible, return an empty d
           {
             role: "user",
             parts: [
-              { text: prompt },
+              { text: finalPrompt },
               ...imageData
             ]
           }

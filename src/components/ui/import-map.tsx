@@ -37,6 +37,36 @@ const countryCoordinates: Record<string, [number, number]> = {
   AT: [47.5162, 14.5501], // Austria
   PL: [51.9194, 19.1451], // Poland
   CZ: [49.8175, 15.4730], // Czech Republic
+  BG: [42.7339, 25.4858], // Bulgaria
+  CA: [56.1304, -106.3468], // Canada
+  MX: [23.6345, -102.5528], // Mexico
+  CN: [35.8617, 104.1954], // China
+};
+
+const countryNameToCode: Record<string, string> = {
+  GERMANY: "DE",
+  "UNITED STATES": "US",
+  USA: "US",
+  JAPAN: "JP",
+  "SOUTH KOREA": "KR",
+  KOREA: "KR",
+  FRANCE: "FR",
+  ITALY: "IT",
+  "UNITED KINGDOM": "GB",
+  UK: "GB",
+  ENGLAND: "GB",
+  SPAIN: "ES",
+  SWEDEN: "SE",
+  BELGIUM: "BE",
+  NETHERLANDS: "NL",
+  SWITZERLAND: "CH",
+  AUSTRIA: "AT",
+  POLAND: "PL",
+  "CZECH REPUBLIC": "CZ",
+  BULGARIA: "BG",
+  CANADA: "CA",
+  MEXICO: "MX",
+  CHINA: "CN",
 };
 
 // Component to update map view when coordinates change
@@ -53,9 +83,14 @@ interface ImportMapProps {
 }
 
 export default function ImportMap({ countryCode }: ImportMapProps) {
+  let normalizedCode = (countryCode || "").trim().toUpperCase();
+  if (normalizedCode.length > 2) {
+    normalizedCode = countryNameToCode[normalizedCode] || normalizedCode;
+  }
+
   // Default to Europe center if country not found, or handle gracefully
-  const coordinates = countryCoordinates[countryCode] || [48.8566, 2.3522]; // Default to Paris/Central Europeish
-  const isKnownCountry = !!countryCoordinates[countryCode];
+  const coordinates = countryCoordinates[normalizedCode] || [48.8566, 2.3522]; // Default to Paris
+  const isKnownCountry = !!countryCoordinates[normalizedCode];
 
   return (
     <div className="h-[300px] w-full rounded-md overflow-hidden border z-0 relative">

@@ -16,6 +16,7 @@ import { ListingHeader } from "./ListingHeader";
 import { SaveListingButton } from "./SaveListingButton";
 import { useListings } from "@/contexts/ListingsContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import dynamic from "next/dynamic";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -94,6 +95,7 @@ type TabType = "main" | "damage" | "vin";
 export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashboardProps) {
   const { user } = useAuth();
   const { getSavedListingWithChat, toggleLike } = useListings();
+  const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState<TabType>("main");
   
   // Chat State (Persistent across tabs)
@@ -151,7 +153,8 @@ export function ListingDashboard({ listing, vinInfo: propVinInfo }: ListingDashb
         body: JSON.stringify({ 
           message: userInput, 
           listing,
-          history: messages 
+          history: messages,
+          language
         }),
       });
 

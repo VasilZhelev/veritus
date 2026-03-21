@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { message, listings, history } = await req.json();
+    const { message, listings, history, language } = await req.json();
     const [car1, car2] = listings;
 
     if (!process.env.GEMINI_API_KEY) {
@@ -45,12 +45,17 @@ export async function POST(req: Request) {
       5. Format your response with clear paragraphs or bullet points.
     `;
 
+    let finalPrompt = prompt;
+    if (language === 'bg') {
+      finalPrompt += `\nCRITICAL INSTRUCTION: You MUST respond entirely in Bulgarian.\n`;
+    }
+
     // Convert history to Gemini format if needed, but for now we just use the prompt with context
     // Ideally we should pass history to chat session, but single turn with context is often enough for simple comparison
     
     const result = await ai.models.generateContent({
       model: "gemini-2.5-flash-lite",
-      contents: prompt,
+      contents: finalPrompt,
     });
     
     const response = result.text;

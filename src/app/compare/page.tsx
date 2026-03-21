@@ -69,7 +69,7 @@ function TypingMessage({ content, onComplete }: { content: string; onComplete: (
 export default function ComparePage() {
   const { listings, compareSelection } = useListings();
   const [selectedListings, setSelectedListings] = useState<CarListing[]>([]);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
   // Chat State
   const [chatInput, setChatInput] = useState("");
@@ -115,7 +115,8 @@ export default function ComparePage() {
         body: JSON.stringify({ 
           message: userInput, 
           listings: selectedListings,
-          history: messages 
+          history: messages,
+          language
         }),
       });
 
@@ -178,6 +179,89 @@ export default function ComparePage() {
     return `${new Intl.NumberFormat("bg-BG").format(mileage)} km`;
   };
 
+  const excludedAttributes = [
+    "id", "url", "image", "brand", "model", "year", "price", "currency",
+    "mileage", "fuelType", "transmission", "location", "description",
+    "createdAt", "source", "title", "priceText", "mileageText", "yearText",
+    "rawDetails", "images", "postedAt", "vin",
+    "Особености",
+    "Състояние"
+  ];
+
+  const extractNumber = (str: any): number | null => {
+    if (typeof str === 'number') return str;
+    if (!str) return null;
+    const matches = String(str).match(/[\d\.]+/g);
+    return matches ? parseFloat(matches.join('')) : null;
+  };
+
+  const allDynamicKeys = new Set<string>();
+  if (car1.attributes) Object.keys(car1.attributes).forEach(k => !excludedAttributes.includes(k) && allDynamicKeys.add(k));
+  if (car2.attributes) Object.keys(car2.attributes).forEach(k => !excludedAttributes.includes(k) && allDynamicKeys.add(k));
+  
+  const dynamicAttributes = Array.from(allDynamicKeys).sort();
+
+  const getWinnerClass = (val1: any, val2: any, type: "lower" | "higher") => {
+    const num1 = extractNumber(val1);
+    const num2 = extractNumber(val2);
+    if (num1 === null || num2 === null || num1 === num2) return "";
+    
+    if (type === "lower") {
+      return num1 < num2 ? "bg-green-100/80 text-green-800 dark:bg-green-900/40 dark:text-green-400 shadow-inner ring-1 ring-inset ring-green-500/20 font-bold" : "";
+    } else {
+      return num1 > num2 ? "bg-green-100/80 text-green-800 dark:bg-green-900/40 dark:text-green-400 shadow-inner ring-1 ring-inset ring-green-500/20 font-bold" : "";
+    }
+  };
+
+  const tSafe = (key: string, fallback: string) => t(key) === key ? fallback : t(key);
+
+  const checkDamage = (val?: string) => {
+    if (!val) return "";
+    const lower = val.toLowerCase();
+    return (lower.includes("повреден") || lower.includes("ударен")) 
+      ? "bg-red-100/90 text-red-800 dark:bg-red-950/60 dark:text-red-400 shadow-inner ring-2 ring-inset ring-red-500/80 font-bold uppercase tracking-wider" 
+      : "";
+  };
+
+  const specRows = [
+    { 
+      label: tSafe('compare.condition', "Състояние"), 
+      val1: car1.attributes?.["Състояние"] || "-", 
+      val2: car2.attributes?.["Състояние"] || "-", 
+      class1: checkDamage(car1.attributes?.["Състояние"]), 
+      class2: checkDamage(car2.attributes?.["Състояние"]) 
+    },
+    { label: tSafe('compare.price', "Price"), val1: formatPrice(car1.price, car1.currency) || "-", val2: formatPrice(car2.price, car2.currency) || "-", class1: getWinnerClass(car1.price, car2.price, "lower"), class2: getWinnerClass(car2.price, car1.price, "lower") },
+    { label: tSafe('compare.year', "Year"), val1: car1.year || "-", val2: car2.year || "-", class1: getWinnerClass(car1.year, car2.year, "higher"), class2: getWinnerClass(car2.year, car1.year, "higher") },
+    { label: tSafe('compare.mileage', "Mileage"), val1: formatMileage(car1.mileage) || "-", val2: formatMileage(car2.mileage) || "-", class1: getWinnerClass(car1.mileage, car2.mileage, "lower"), class2: getWinnerClass(car2.mileage, car1.mileage, "lower") },
+    { label: tSafe('compare.transmission', "Transmission"), val1: car1.transmission || "-", val2: car2.transmission || "-", class1: "", class2: "" },
+    ...dynamicAttributes.map(key => {
+      const v1 = car1.attributes?.[key];
+      const v2 = car2.attributes?.[key];
+      let isHigherBetter = false;
+      let isLowerBetter = false;
+      if (key === "Двигател" || key === "Мощност" || key.toLowerCase().includes("к.с.")) isHigherBetter = true;
+      if (key === "Ускорение" || key.toLowerCase().includes("0-100")) isLowerBetter = true;
+      
+      return {
+        label: key,
+        val1: v1 || "-",
+        val2: v2 || "-",
+        class1: isHigherBetter ? getWinnerClass(v1, v2, "higher") : isLowerBetter ? getWinnerClass(v1, v2, "lower") : "",
+        class2: isHigherBetter ? getWinnerClass(v2, v1, "higher") : isLowerBetter ? getWinnerClass(v2, v1, "lower") : "",
+      };
+    })
+  ].filter(row => row.val1 !== "-" || row.val2 !== "-");
+
+  const getFeatures = (car: CarListing) => {
+    const fStr = car.attributes?.["Особености"] || "";
+    return fStr.split(',').map((f: string) => f.trim()).filter(Boolean);
+  };
+  
+  const features1 = new Set<string>(getFeatures(car1));
+  const features2 = new Set<string>(getFeatures(car2));
+  const allFeatures: string[] = Array.from(new Set<string>([...features1, ...features2])).sort();
+
   return (
     <div className="min-h-screen bg-background pb-12">
       {/* Header */}
@@ -202,7 +286,7 @@ export default function ComparePage() {
             <div className="space-y-4">
               <div className="relative aspect-video rounded-xl overflow-hidden bg-muted">
                 {car1.image ? (
-                  <Image src={car1.image} alt={car1.title || "Car 1"} fill className="object-cover" />
+                  <Image src={car1.image!} alt={car1.title || "Car 1"} fill className="object-cover" />
                 ) : (
                   <div className="flex items-center justify-center h-full text-muted-foreground">No Image</div>
                 )}
@@ -219,7 +303,7 @@ export default function ComparePage() {
             <div className="space-y-4">
               <div className="relative aspect-video rounded-xl overflow-hidden bg-muted">
                 {car2.image ? (
-                  <Image src={car2.image} alt={car2.title || "Car 2"} fill className="object-cover" />
+                  <Image src={car2.image!} alt={car2.title || "Car 2"} fill className="object-cover" />
                 ) : (
                   <div className="flex items-center justify-center h-full text-muted-foreground">No Image</div>
                 )}
@@ -234,31 +318,59 @@ export default function ComparePage() {
           </div>
 
           {/* Specs Comparison */}
-          <Card>
-            <CardHeader className="pb-4 border-b">
-              <h3 className="font-semibold">{t('compare.specifications')}</h3>
+          <Card className="overflow-hidden border-zinc-200 dark:border-zinc-800 shadow-sm">
+            <CardHeader className="pb-4 border-b bg-muted/30">
+              <h3 className="font-semibold text-lg">{t('compare.specifications') || "Head-to-Head Specifications"}</h3>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y">
-                {[
-                  { icon: Calendar, label: t('compare.year'), val1: car1.year, val2: car2.year },
-                  { icon: Gauge, label: t('compare.mileage'), val1: formatMileage(car1.mileage), val2: formatMileage(car2.mileage) },
-                  { icon: Fuel, label: t('compare.fuel'), val1: car1.fuelType, val2: car2.fuelType },
-                  { icon: Settings, label: t('compare.transmission'), val1: car1.transmission, val2: car2.transmission },
-                  { icon: MapPin, label: t('compare.location'), val1: car1.location, val2: car2.location },
-                ].map((row, i) => (
-                  <div key={i} className="grid grid-cols-3 py-4 px-6 hover:bg-muted/50 transition-colors">
-                    <div className="col-span-3 sm:col-span-1 flex items-center gap-2 text-muted-foreground mb-2 sm:mb-0">
-                      <row.icon className="h-4 w-4" />
-                      <span className="text-sm font-medium">{row.label}</span>
+              <div className="divide-y divide-border/50">
+                {specRows.map((row, i) => (
+                  <div key={i} className="grid grid-cols-3 hover:bg-muted/30 transition-colors">
+                    <div className="col-span-1 flex items-center py-4 px-4 sm:px-6 text-sm font-semibold tracking-tight text-muted-foreground bg-muted/10 border-r border-border/50">
+                      {row.label}
                     </div>
-                    <div className="font-medium">{row.val1 || "-"}</div>
-                    <div className="font-medium">{row.val2 || "-"}</div>
+                    <div className={cn("col-span-1 py-4 px-4 sm:px-6 font-medium text-sm flex items-center transition-colors", row.class1)}>
+                      {row.val1}
+                    </div>
+                    <div className={cn("col-span-1 py-4 px-4 sm:px-6 font-medium text-sm flex items-center border-l bg-white/30 dark:bg-background/20 transition-colors", row.class2)}>
+                      {row.val2}
+                    </div>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
+
+          {/* Features Diff */}
+          {allFeatures.length > 0 && (
+            <Card className="overflow-hidden border-zinc-200 dark:border-zinc-800 shadow-sm">
+              <CardHeader className="pb-4 border-b bg-muted/30">
+                <h3 className="font-semibold text-lg">Features & Options</h3>
+                <p className="text-xs text-muted-foreground">What one car has that the other might not.</p>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-border/50 max-h-[500px] overflow-y-auto">
+                  {allFeatures.map((feature, i) => {
+                    const has1 = features1.has(feature);
+                    const has2 = features2.has(feature);
+                    return (
+                      <div key={i} className="grid grid-cols-3 hover:bg-muted/30 transition-colors">
+                        <div className="col-span-1 flex items-center py-3 px-4 sm:px-6 text-sm font-medium text-muted-foreground bg-muted/10 border-r border-border/50">
+                          {feature}
+                        </div>
+                        <div className={cn("col-span-1 py-3 px-4 sm:px-6 flex items-center justify-center", has1 ? "bg-green-50/20 dark:bg-green-900/10 text-green-600 dark:text-green-400" : "bg-red-50/20 dark:bg-red-900/10 text-muted-foreground/30")}>
+                          {has1 ? <Check className="h-5 w-5" /> : <X className="h-4 w-4" />}
+                        </div>
+                        <div className={cn("col-span-1 py-3 px-4 sm:px-6 flex items-center justify-center border-l", has2 ? "bg-green-50/20 dark:bg-green-900/10 text-green-600 dark:text-green-400" : "bg-red-50/20 dark:bg-red-900/10 text-muted-foreground/30")}>
+                          {has2 ? <Check className="h-5 w-5" /> : <X className="h-4 w-4" />}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* AI Chat Sidebar */}

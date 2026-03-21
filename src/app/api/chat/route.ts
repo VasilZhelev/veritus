@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { message, listing, history } = await req.json();
+    const { message, listing, history, language } = await req.json();
 
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json({ error: "GEMINI_API_KEY is not set" }, { status: 500 });
@@ -32,7 +32,12 @@ If the user asks about common issues, mention general issues for this model year
 Do not make up facts about the car that are not in the listing.
 `;
 
-    let prompt = systemPrompt + "\n\nConversation History:\n";
+    let finalSystemPrompt = systemPrompt;
+    if (language === 'bg') {
+      finalSystemPrompt += `\nCRITICAL INSTRUCTION: You MUST respond entirely in Bulgarian.\n`;
+    }
+
+    let prompt = finalSystemPrompt + "\n\nConversation History:\n";
     if (history && Array.isArray(history)) {
         history.forEach((msg: any) => {
             // Skip the current message if it's already in history (it shouldn't be based on frontend logic usually, but good to be safe)

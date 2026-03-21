@@ -14,12 +14,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { CarListing } from "@/components/ui/car-listing-card";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DamageDetectionTabProps {
   listing: CarListing;
 }
 
 export default function DamageDetectionTab({ listing }: DamageDetectionTabProps) {
+  const { language } = useLanguage();
   const [damageAnalysis, setDamageAnalysis] = useState<any>(null);
   const [isDamageLoading, setIsDamageLoading] = useState(false);
   const [damageError, setDamageError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
           const response = await fetch('/api/damage-check', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageUrls: listingImages }),
+            body: JSON.stringify({ imageUrls: listingImages, language }),
           });
           
           const data = await response.json();
@@ -73,6 +75,10 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
   };
 
   const hasDamages = damageAnalysis && damageAnalysis.damages && damageAnalysis.damages.length > 0;
+  
+  const totalCostEUR = hasDamages 
+    ? damageAnalysis.damages.reduce((sum: number, item: any) => sum + (Number(item.estimatedCostEUR) || 0), 0)
+    : 0;
 
   return (
     <div className="bg-white dark:bg-card border-r border-border/50 p-8 lg:p-12 relative min-h-[500px]">
@@ -154,9 +160,17 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
                   </p>
                 </div>
                 
-                <div className="inline-flex self-start sm:self-auto rounded-lg bg-muted text-sm border flex-shrink-0">
-                  <div className="px-3 py-1.5 border-r border-border text-muted-foreground">Condition</div>
-                  <div className="px-3 py-1.5 font-medium">{damageAnalysis.overallCondition || "Fair"}</div>
+                <div className="inline-flex flex-col self-start sm:self-auto rounded-lg bg-muted text-sm border flex-shrink-0 overflow-hidden">
+                  <div className="flex border-b border-border/50">
+                    <div className="px-3 py-1.5 border-r border-border text-muted-foreground bg-background/50">Condition</div>
+                    <div className="px-3 py-1.5 font-medium bg-background">{damageAnalysis.overallCondition || "Fair"}</div>
+                  </div>
+                  {totalCostEUR > 0 && (
+                    <div className="flex bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400">
+                      <div className="px-3 py-1.5 border-r border-amber-200 dark:border-amber-900/50 font-semibold bg-amber-100/50 dark:bg-amber-900/20">Est. Repair</div>
+                      <div className="px-3 py-1.5 font-bold">€{totalCostEUR.toLocaleString()}</div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -190,9 +204,16 @@ export default function DamageDetectionTab({ listing }: DamageDetectionTabProps)
                         <div className="flex-1 w-full">
                           <div className="flex justify-between items-start mb-2">
                             <h4 className="font-semibold text-base">{damage.type}</h4>
-                            <Badge variant="outline" className={cn("text-[10px] uppercase font-bold tracking-wider px-2 py-0 h-5 border flex-shrink-0 ml-3", activeBadgeClass)}>
-                              {damage.severity}
-                            </Badge>
+                            <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                              {damage.estimatedCostEUR ? (
+                                <Badge variant="secondary" className="text-[11px] font-bold px-2 py-0 h-5 bg-background shadow-sm border-border whitespace-nowrap">
+                                  €{damage.estimatedCostEUR.toLocaleString()}
+                                </Badge>
+                              ) : null}
+                              <Badge variant="outline" className={cn("text-[10px] uppercase font-bold tracking-wider px-2 py-0 h-5 border", activeBadgeClass)}>
+                                {damage.severity}
+                              </Badge>
+                            </div>
                           </div>
                           
                           <div className="flex items-center text-[13px] opacity-80 mb-3 font-medium">

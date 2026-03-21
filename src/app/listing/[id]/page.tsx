@@ -62,5 +62,5 @@ export default function ListingPage() {
     );
   }
 
-  return <ListingDashboard listing={listing} vinInfo={vinData} />;
+  return <ListingDashboard listing={listing} vinInfo={params.id === "demo" ? vinData : undefined} />;
 }
